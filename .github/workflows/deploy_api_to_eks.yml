@@ -84,25 +84,25 @@ jobs:
       with:                                                                                                         
         args: -n ${{ inputs.kube-namespace }} apply -f configmap.yaml
         
-    # - name: Deploy to Kubernetes cluster                                                                            
-    #   uses: kodermax/kubectl-aws-eks@master                                                                         
-    #   env:                                                                                                          
-    #     RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
-    #     KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
-    #   with:                                                                                                         
-    #     args: -n ${{ inputs.kube-namespace }} set image deployment/gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }} gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }}=${{ env.RELEASE_IMAGE }}
+    - name: Deploy to Kubernetes cluster                                                                            
+      uses: kodermax/kubectl-aws-eks@master                                                                         
+      env:                                                                                                          
+        RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
+        KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
+      with:                                                                                                         
+        args: -n ${{ inputs.kube-namespace }} set image deployment/gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }} gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }}=${{ env.RELEASE_IMAGE }}
 
-    # - name: Verify deployment
-    #   uses: kodermax/kubectl-aws-eks@master
-    #   env:
-    #     KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }}
-    #   with:
-    #     args: rollout -n ${{ inputs.kube-namespace }} status deployment/gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }} --timeout=120s
+    - name: Verify deployment
+      uses: kodermax/kubectl-aws-eks@master
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }}
+      with:
+        args: rollout -n ${{ inputs.kube-namespace }} status deployment/gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }} --timeout=120s
         
-    # - name: Annotate deployment                                                            
-    #   uses: kodermax/kubectl-aws-eks@master                                                                         
-    #   env:                                                                                                          
-    #     RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
-    #     KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
-    #   with:                                                                                                         
-    #     args: -n ${{ inputs.kube-namespace }} annotate deployment/gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }} kubernetes.io/change-cause='image updated'
+    - name: Annotate deployment                                                            
+      uses: kodermax/kubectl-aws-eks@master                                                                         
+      env:                                                                                                          
+        RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
+        KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
+      with:                                                                                                         
+        args: -n ${{ inputs.kube-namespace }} annotate deployment/gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }} kubernetes.io/change-cause='image updated'
