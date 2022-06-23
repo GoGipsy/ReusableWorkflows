@@ -17,6 +17,9 @@ on:
       build-artifact-name:
         required: true
         type: string
+      api-version:
+        required: true
+        type: string
     secrets:
       aws-access-key-id:
         required: true
@@ -60,7 +63,7 @@ jobs:
     - name: Create configmap.yaml
       run: |
         cat <<EOF > configmap.yaml
-        apiVersion: v1
+        apiVersion: ${{ inputs.api-version }}
         kind: ConfigMap
         metadata:
             name: gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }}-appsettings
