@@ -104,5 +104,6 @@ jobs:
       env:                                                                                                          
         RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
         KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
+        GITHUB_SHA: ${{ github.sha }}
       with:                                                                                                         
-        args: -n ${{ inputs.kube-namespace }} annotate deployment/gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }} kubernetes.io/change-cause='image updated'
+        args: -n ${{ inputs.kube-namespace }} annotate deployment/gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }} kubernetes.io/change-cause='image updated to ${GITHUB_SHA}'
