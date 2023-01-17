@@ -28,6 +28,9 @@ jobs:
   deploy:
     runs-on: ubuntu-20.04
     steps:
+    - uses: actions/checkout@v2
+      with:
+        repository: 'GoGipsy/ReusableWorkflows'
     - uses: actions/download-artifact@v3
       with:
         name: ${{ inputs.build-artifact-name }}
@@ -86,14 +89,40 @@ jobs:
         KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
       with:                                                                                                         
         args: -n ${{ inputs.kube-namespace }} apply -f configmap.yaml
-        
-    - name: Deploy to Kubernetes cluster                                                                            
+    - name: Configure Deployment Template
+      run: |
+        sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' deployment-template.yaml
+        sed -i 's/{{baseName}}/${{ inputs.base-name }}/' deployment-template.yaml
+        sed -i 's/{{ASPNETCORE_ENVIRONMENT}}/Development/' deployment-template.yaml
+        sed -i 's/{{apiImageTag}}/${{ github.sha }}/' deployment-template.yaml
+    - name: Archive deployment
+      uses: actions/upload-artifact@v2
+      with:
+        name: deployment
+        path: deployment-template.yaml
+    - name: Configure Service Template
+      run: |
+        sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' service-template.yaml
+        sed -i 's/{{baseName}}/${{ inputs.base-name }}/' service-template.yaml
+    - name: Archive service
+      uses: actions/upload-artifact@v2
+      with:
+        name: service
+        path: service-template.yaml
+    - name: Apply Service to Kubernetes cluster                                                                            
       uses: kodermax/kubectl-aws-eks@master                                                                         
       env:                                                                                                          
         RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
         KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
       with:                                                                                                         
-        args: -n ${{ inputs.kube-namespace }} set image deployment/gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }} gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }}=${{ env.RELEASE_IMAGE }}
+        args: apply -f service-template.yaml
+    - name: Apply Deployment to Kubernetes cluster                                                                            
+      uses: kodermax/kubectl-aws-eks@master                                                                         
+      env:                                                                                                          
+        RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
+        KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
+      with:                                                                                                         
+        args: apply -f deployment-template.yaml
 
     - name: Verify deployment
       uses: kodermax/kubectl-aws-eks@master
