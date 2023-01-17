@@ -102,6 +102,15 @@ jobs:
       with:
         name: deployment
         path: deployment-template.yaml
+    - name: Configure Service Template
+      run: |
+        sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' service-template.yaml
+        sed -i 's/{{baseName}}/${{ inputs.base-name }}/' service-template.yaml
+    - name: Archive service
+      uses: actions/upload-artifact@v2
+      with:
+        name: service
+        path: service-template.yaml
     - name: Deploy to Kubernetes cluster                                                                            
       uses: kodermax/kubectl-aws-eks@master                                                                         
       env:                                                                                                          
