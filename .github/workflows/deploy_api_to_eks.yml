@@ -93,10 +93,10 @@ jobs:
         args: -n ${{ inputs.kube-namespace }} apply -f configmap.yaml
     - name: Configure Deployment Template
       run: |
-        sed 's/{{environment}}/${{ inputs.kube-namespace }}/' deployment-template.yaml
-        sed 's/{{baseName}}/${{ inputs.base-name }}/' deployment-template.yaml
-        sed 's/{{ASPNETCORE_ENVIRONMENT}}/Development/' deployment-template.yaml
-        sed 's/{{apiImageTag}}/${{ github.sha }}/' deployment-template.yaml
+        sed 's/{{environment}}/${{ inputs.kube-namespace }}/' deployment-template.yaml > deployment-template.yaml
+        sed 's/{{baseName}}/${{ inputs.base-name }}/' deployment-template.yaml > deployment-template.yaml
+        sed 's/{{ASPNETCORE_ENVIRONMENT}}/Development/' deployment-template.yaml > deployment-template.yaml
+        sed 's/{{apiImageTag}}/${{ github.sha }}/' deployment-template.yaml > deployment-template.yaml
     - name: Archive deployment
       uses: actions/upload-artifact@v2
       with:
