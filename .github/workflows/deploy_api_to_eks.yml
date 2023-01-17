@@ -111,7 +111,14 @@ jobs:
       with:
         name: service
         path: service-template.yaml
-    - name: Deploy to Kubernetes cluster                                                                            
+    - name: Apply Service to Kubernetes cluster                                                                            
+      uses: kodermax/kubectl-aws-eks@master                                                                         
+      env:                                                                                                          
+        RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
+        KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
+      with:                                                                                                         
+        args: apply -f service-template.yaml
+    - name: Apply Deployment to Kubernetes cluster                                                                            
       uses: kodermax/kubectl-aws-eks@master                                                                         
       env:                                                                                                          
         RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
