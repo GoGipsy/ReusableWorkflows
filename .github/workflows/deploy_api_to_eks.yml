@@ -97,6 +97,11 @@ jobs:
         sed 's/{{baseName}}/${{ inputs.base-name }}/' deployment-template.yaml
         sed 's/{{ASPNETCORE_ENVIRONMENT}}/Development/' deployment-template.yaml
         sed 's/{{apiImageTag}}/${{ github.sha }}/' deployment-template.yaml
+    - name: Archive deployment
+      uses: actions/upload-artifact@v2
+      with:
+        name: deployment
+        path: deployment-template.yaml
     - name: Deploy to Kubernetes cluster                                                                            
       uses: kodermax/kubectl-aws-eks@master                                                                         
       env:                                                                                                          
