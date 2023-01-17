@@ -101,7 +101,7 @@ jobs:
       uses: kodermax/kubectl-aws-eks@master                                                                         
       env:                                                                                                          
         RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
-        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA_DEV }}
+        KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
       with:                                                                                                         
         args: apply -f deployment-template.yaml
 
