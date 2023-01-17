@@ -32,6 +32,10 @@ jobs:
       with:
         name: ${{ inputs.build-artifact-name }}
     - uses: actions/checkout@v2
+      with:
+        # Repository name with owner. For example, actions/checkout
+        # Default: ${{ github.repository }}
+        repository: 'GoGipsy/ReusableWorkflows'
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
