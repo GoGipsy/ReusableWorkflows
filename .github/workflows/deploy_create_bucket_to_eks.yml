@@ -1,0 +1,34 @@
+name: addS3BucketAWS
+on:
+  workflow_call:
+    inputs:
+      aws-region:
+        required: true
+        type: string
+      bucket-name:
+        required: true
+        type: string
+    secrets:
+      aws-access-key-id:
+        required: true
+      aws-secret-access-key:
+        required: true
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Configure AWS credentials    
+        uses: aws-actions/configure-aws-credentials@v1    
+        with: 
+          aws-access-key-id: ${{ secrets.aws-access-key-id }}    
+          aws-secret-access-key: ${{ secrets.aws-secret-access-key }}           
+          aws-region: ${{ inputs.aws-region }}
+    - name: Upload to S3
+        run: |
+          aws s3 mb s3://${{ inputs.bucket-name }}
+        continue-on-error: true
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
