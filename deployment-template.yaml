@@ -2,8 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: gds-api-{{baseName}}-{{environment}}
-  name: gds-api-{{baseName}}-{{environment}}
+    app: gds-{{kind}}-{{baseName}}-{{environment}}
+  name: gds-{{kind}}-{{baseName}}-{{environment}}
   namespace: {{environment}}
 spec:
   progressDeadlineSeconds: 600
@@ -11,7 +11,7 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: gds-api-{{baseName}}-{{environment}}
+      app: gds-{{kind}}-{{baseName}}-{{environment}}
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -21,7 +21,7 @@ spec:
     metadata:
       creationTimestamp: null
       labels:
-        app: gds-api-{{baseName}}-{{environment}}
+        app: gds-{{kind}}-{{baseName}}-{{environment}}
     spec:
       affinity:
         podAntiAffinity:
@@ -31,7 +31,7 @@ spec:
               - key: app
                 operator: In
                 values:
-                - gds-api-{{baseName}}-{{environment}}
+                - gds-{{kind}}-{{baseName}}-{{environment}}
             topologyKey: kubernetes.io/hostname
       containers:
       - args:
@@ -58,12 +58,9 @@ spec:
         - mountPath: /App/logs
           name: logs
           readOnly: true
-      - env:
-        - name: ASPNETCORE_ENVIRONMENT
-          value: {{ASPNETCORE_ENVIRONMENT}}
-        image: 809853256122.dkr.ecr.us-east-1.amazonaws.com/gds-api-{{baseName}}:{{apiImageTag}}
+      - image: 809853256122.dkr.ecr.us-east-1.amazonaws.com/gds-{{kind}}-{{baseName}}:{{apiImageTag}}
         imagePullPolicy: Always
-        name: gds-api-{{baseName}}-{{environment}}
+        name: gds-{{kind}}-{{baseName}}-{{environment}}
         ports:
         - containerPort: 80
           protocol: TCP
@@ -87,7 +84,7 @@ spec:
           items:
           - key: appsettings.json
             path: appsettings.json
-          name: gds-api-{{baseName}}-{{environment}}-appsettings
+          name: gds-{{kind}}-{{baseName}}-{{environment}}-appsettings
         name: appsettings-volume
       - configMap:
           defaultMode: 420

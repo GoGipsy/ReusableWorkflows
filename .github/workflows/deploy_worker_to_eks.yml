@@ -1,4 +1,4 @@
-name: Deploy API
+name: Deploy Worker
 on:
   workflow_call:
     inputs:
@@ -45,12 +45,12 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
     - name: Create ECR Repository
       continue-on-error: true
-      run: aws ecr create-repository --repository-name gds-api-${{ inputs.base-name }}
+      run: aws ecr create-repository --repository-name gds-worker-${{ inputs.base-name }}
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: gds-api-${{ inputs.base-name }}
+        ECR_REPOSITORY: gds-worker-${{ inputs.base-name }}
         IMAGE_TAG: ${{ github.sha }}
         NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
       run: |
@@ -69,7 +69,7 @@ jobs:
         apiVersion: v1
         kind: ConfigMap
         metadata:
-            name: gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }}-appsettings
+            name: gds-worker-${{ inputs.base-name }}-${{ inputs.kube-namespace }}-appsettings
             namespace: ${{ inputs.kube-namespace }}
         data:
             appsettings.json: |-
@@ -93,7 +93,7 @@ jobs:
       run: |
         sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' deployment-template.yaml
         sed -i 's/{{baseName}}/${{ inputs.base-name }}/' deployment-template.yaml
-        sed -i 's/{{kind}}/api/' deployment-template.yaml
+        sed -i 's/{{kind}}/worker/' deployment-template.yaml
         sed -i 's/{{ASPNETCORE_ENVIRONMENT}}/Development/' deployment-template.yaml
         sed -i 's/{{apiImageTag}}/${{ github.sha }}/' deployment-template.yaml
     - name: Archive deployment
@@ -101,15 +101,6 @@ jobs:
       with:
         name: deployment
         path: deployment-template.yaml
-    - name: Configure Service Template
-      run: |
-        sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' service-template.yaml
-        sed -i 's/{{baseName}}/${{ inputs.base-name }}/' service-template.yaml
-    - name: Archive service
-      uses: actions/upload-artifact@v2
-      with:
-        name: service
-        path: service-template.yaml
     - name: Apply Service to Kubernetes cluster                                                                            
       uses: kodermax/kubectl-aws-eks@master                                                                         
       env:                                                                                                          
@@ -130,7 +121,7 @@ jobs:
       env:
         KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }}
       with:
-        args: rollout -n ${{ inputs.kube-namespace }} status deployment/gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }} --timeout=300s
+        args: rollout -n ${{ inputs.kube-namespace }} status deployment/gds-worker-${{ inputs.base-name }}-${{ inputs.kube-namespace }} --timeout=300s
         
     - name: Annotate deployment                                                            
       uses: kodermax/kubectl-aws-eks@master                                                                         
@@ -139,4 +130,4 @@ jobs:
         KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
         GITHUB_SHA: ${{ github.sha }}
       with:                                                                                                         
-        args: -n ${{ inputs.kube-namespace }} annotate deployment/gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }} kubernetes.io/change-cause='image updated to ${GITHUB_SHA}'
+        args: -n ${{ inputs.kube-namespace }} annotate deployment/gds-worker-${{ inputs.base-name }}-${{ inputs.kube-namespace }} kubernetes.io/change-cause='image updated to ${GITHUB_SHA}'
