@@ -68,7 +68,7 @@ spec:
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
-        - mountPath: /app/appsettings.json
+        - mountPath: /App/appsettings.json
           name: appsettings-volume
           subPath: appsettings.json
         - mountPath: /App/logs
