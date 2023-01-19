@@ -99,7 +99,7 @@ jobs:
     - name: Archive deployment
       uses: actions/upload-artifact@v2
       with:
-        name: deployment
+        name: deployment-${{ inputs.base-name }}
         path: deployment-template.yaml
     - name: Apply Deployment to Kubernetes cluster                                                                            
       uses: kodermax/kubectl-aws-eks@master                                                                         
