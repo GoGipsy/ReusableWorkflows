@@ -34,6 +34,21 @@ spec:
                 - gds-{{kind}}-{{baseName}}-{{environment}}
             topologyKey: kubernetes.io/hostname
       containers:
+      - image: 809853256122.dkr.ecr.us-east-1.amazonaws.com/gds-{{kind}}-{{baseName}}:{{apiImageTag}}
+        imagePullPolicy: Always
+        name: gds-{{kind}}-{{baseName}}-{{environment}}
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /App/appsettings.json
+          name: appsettings-volume
+          subPath: appsettings.json
+        - mountPath: /App/logs
+          name: logs
       - args:
         - -config.file=/etc/promtail/promtail.yaml
         image: 809853256122.dkr.ecr.us-east-1.amazonaws.com/gds-promtail:latest
@@ -58,21 +73,6 @@ spec:
         - mountPath: /App/logs
           name: logs
           readOnly: true
-      - image: 809853256122.dkr.ecr.us-east-1.amazonaws.com/gds-{{kind}}-{{baseName}}:{{apiImageTag}}
-        imagePullPolicy: Always
-        name: gds-{{kind}}-{{baseName}}-{{environment}}
-        ports:
-        - containerPort: 80
-          protocol: TCP
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /App/appsettings.json
-          name: appsettings-volume
-          subPath: appsettings.json
-        - mountPath: /App/logs
-          name: logs
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
