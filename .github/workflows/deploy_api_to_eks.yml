@@ -73,11 +73,10 @@ jobs:
         EOF
         cat appsettings.json | sed -e 's/^/        /g' >> configmap.yaml
         
-    - name: Archive configmap
-      uses: actions/upload-artifact@v2
+    - name: Cleanup build artifact
+      uses: geekyeggo/delete-artifact@v2
       with:
-        name: configmap
-        path: configmap.yaml
+          name: ${{ inputs.build-artifact-name }}
 
     - name: Deploy configmap                                                                            
       uses: kodermax/kubectl-aws-eks@master                                                                         
