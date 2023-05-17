@@ -95,6 +95,7 @@ jobs:
         sed -i 's/{{baseName}}/${{ inputs.base-name }}/' deployment-template.yaml
         sed -i 's/{{kind}}/api/' deployment-template.yaml
         sed -i 's/{{apiImageTag}}/${{ github.sha }}/' deployment-template.yaml
+        sed -i 's/{{aws-region}}/${{ inputs.aws-region }}/' deployment-template.yaml
     - name: Archive deployment
       uses: actions/upload-artifact@v2
       with:
