@@ -1,0 +1,56 @@
+name: E2E Tests
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      test-repository:
+        required: true
+        type: string
+      test-tag:
+        required: true
+        type: string
+    
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v3
+      repository: ${{ inputs.test-repository }}
+
+    - name: Set up Ruby
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.7
+
+    - name: Bundle install
+      env:
+        RAILS_ENV: test
+      run: |
+        #bundle config path vendor/bundle
+        bundle install
+    - name: Install Chrome and ChromeDriver
+      run: |
+        CHROME_DRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`
+        curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        sudo apt-get -yq update
+        sudo apt-get -yq install google-chrome-stable
+        curl -sS -o chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/113.0.5672.63/chromedriver_linux64.zip
+        sudo unzip -o chromedriver_linux64.zip -d /usr/bin/
+        sudo chmod +x /usr/bin/chromedriver
+    - uses: nanasess/setup-chromedriver@v2
+    - run: |
+        export DISPLAY=:99
+        chromedriver --url-base=/wd/hub &
+        sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
+    - name: Run tests
+      run: |
+        export DISPLAY=:99
+        cucumber -p web -t @${{ inputs.test-tag }} --publish
+    
+    - name: Archive test result
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: reports
+        path: ./reports_web_api
