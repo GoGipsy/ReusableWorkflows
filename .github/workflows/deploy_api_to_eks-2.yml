@@ -48,12 +48,12 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
     - name: Create ECR Repository
       continue-on-error: true
-      run: aws ecr create-repository --repository-name gds-api-${{ inputs.base-name }}
+      run: aws ecr create-repository --repository-name gds-api-${{ inputs.base-name }}${{ inputs.repository-sufix }}
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: gds-api-${{ inputs.base-name }}
+        ECR_REPOSITORY: gds-api-${{ inputs.base-name }}${{ inputs.repository-sufix }}
         IMAGE_TAG: ${{ github.sha }}
         NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
       run: |
