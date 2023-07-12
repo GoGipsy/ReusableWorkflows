@@ -17,6 +17,9 @@ on:
       build-artifact-name:
         required: true
         type: string
+      repository-sufix:
+        required: false
+        type: string
     secrets:
       aws-access-key-id:
         required: true
@@ -96,6 +99,7 @@ jobs:
         sed -i 's/{{kind}}/api/' deployment-template.yaml
         sed -i 's/{{apiImageTag}}/${{ github.sha }}/' deployment-template.yaml
         sed -i 's/{{aws-region}}/${{ inputs.aws-region }}/' deployment-template.yaml
+        sed -i 's/{{repository-sufix}}/${{ inputs.repository-sufix }}/' deployment-template.yaml
     - name: Archive deployment
       uses: actions/upload-artifact@v2
       with:
