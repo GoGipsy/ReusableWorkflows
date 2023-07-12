@@ -34,7 +34,7 @@ spec:
                 - gds-{{kind}}-{{baseName}}-{{environment}}
             topologyKey: kubernetes.io/hostname
       containers:
-      - image: 809853256122.dkr.ecr.{{aws-region}}.amazonaws.com/gds-{{kind}}-{{baseName}}:{{apiImageTag}}
+      - image: 809853256122.dkr.ecr.{{aws-region}}.amazonaws.com/gds-{{kind}}-{{baseName}}{{repository-sufix}}:{{apiImageTag}}
         imagePullPolicy: Always
         name: gds-{{kind}}-{{baseName}}-{{environment}}
         ports:
