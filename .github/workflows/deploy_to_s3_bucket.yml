@@ -1,0 +1,47 @@
+name: Upload to S3
+
+on:
+  workflow_call:
+    inputs:
+      bucket-name:
+        required: true
+        type: string
+      content:
+        required: true
+        type: string
+      aws-region:
+        required: true
+        type: string
+    secrets:
+      aws-access-key-id:
+        required: true
+      aws-secret-access-key:
+        required: true
+
+jobs:
+  create-bucket-if-not-exists:
+    uses: GoGipsy/ReusableWorkflows/.github/workflows/deploy_create_bucket_to_eks.yml@master
+    with:
+      aws-region: ${{ inputs.aws-region }}
+      bucket-name: ${{ inputs.bucket-name }}
+    secrets:
+      aws-access-key-id: ${{ secrets.aws-access-key-id }}
+      aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
+
+  upload:
+    needs: create-bucket-if-not-exists
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: 'GoGipsy/ReusableWorkflows'
+      - uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.content }}
+          path: content
+      - uses: shallwefootball/s3-upload-action@master
+        with:
+          aws_key_id: ${{ secrets.aws-access-key-id }}
+          aws_secret_access_key: ${{ secrets.aws-secret-access-key }}
+          aws_bucket: ${{ inputs.bucket-name }}
+          source_dir: content
