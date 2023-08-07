@@ -39,9 +39,10 @@ jobs:
         with:
           name: ${{ inputs.content }}
           path: content
-      - uses: shallwefootball/s3-upload-action@master
-        with:
-          aws_key_id: ${{ secrets.aws-access-key-id }}
-          aws_secret_access_key: ${{ secrets.aws-secret-access-key }}
-          aws_bucket: ${{ inputs.bucket-name }}
-          source_dir: content
+      - name: Upload content to S3
+        run: |
+           aws s3 sync content s3://${{ inputs.bucket-name }}/
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws-secret-access-key }}
+          AWS_DEFAULT_REGION: ${{ inputs.aws-region }}
