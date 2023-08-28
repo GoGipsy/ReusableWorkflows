@@ -1,0 +1,148 @@
+name: Deploy API
+on:
+  workflow_call:
+    inputs:
+      aws-region:
+        required: true
+        type: string
+      kube-namespace:
+        required: true
+        type: string
+      base-name:
+        required: true
+        type: string
+      dockerfile-name:
+        required: true
+        type: string
+      build-artifact-name:
+        required: true
+        type: string
+      repository-sufix:
+        required: false
+        type: string
+    secrets:
+      aws-access-key-id:
+        required: true
+      aws-secret-access-key:
+        required: true
+      kube-config-data:
+        required: true
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: 'GoGipsy/ReusableWorkflows'
+    - uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.build-artifact-name }}
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.aws-access-key-id }}
+        aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
+        aws-region: ${{ inputs.aws-region }}
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+      with: 
+        mask-password: true
+#    - name: Create ECR Repository
+#      continue-on-error: true
+#      run: aws ecr create-repository --repository-name gds-api-${{ inputs.base-name }}${{ inputs.repository-sufix }}
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: ${{ inputs.base-name }}${{ inputs.repository-sufix }}
+        IMAGE_TAG: ${{ github.sha }}
+        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
+      run: |
+        docker build \
+        --build-arg RELEASE_PATH=${{ github.workspace }}/out \
+        -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+        -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+        -f ${{ inputs.dockerfile-name }} .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+        
+    # - name: Create configmap.yaml
+    #   run: |
+    #     cat <<EOF > configmap.yaml
+    #     apiVersion: v1
+    #     kind: ConfigMap
+    #     metadata:
+    #         name: gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }}-appsettings
+    #         namespace: ${{ inputs.kube-namespace }}
+    #     data:
+    #         appsettings.json: |-
+    #     EOF
+    #     cat appsettings.json | sed -e 's/^/        /g' >> configmap.yaml
+        
+    # - name: Archive configmap
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: configmap
+    #     path: configmap.yaml
+
+    # - name: Deploy configmap                                                                            
+    #   uses: kodermax/kubectl-aws-eks@master                                                                         
+    #   env:                                                                                                          
+    #     RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
+    #     KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
+    #   with:                                                                                                         
+    #     args: -n ${{ inputs.kube-namespace }} apply -f configmap.yaml
+    # - name: Configure Deployment Template
+    #   run: |
+    #     sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' deployment-template.yaml
+    #     sed -i 's/{{baseName}}/${{ inputs.base-name }}/' deployment-template.yaml
+    #     sed -i 's/{{kind}}/api/' deployment-template.yaml
+    #     sed -i 's/{{apiImageTag}}/${{ github.sha }}/' deployment-template.yaml
+    #     sed -i 's/{{aws-region}}/${{ inputs.aws-region }}/' deployment-template.yaml
+    #     sed -i 's/{{repository-sufix}}/${{ inputs.repository-sufix }}/' deployment-template.yaml
+    # - name: Archive deployment
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: deployment
+    #     path: deployment-template.yaml
+    # - name: Configure Service Template
+    #   run: |
+    #     sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' service-template.yaml
+    #     sed -i 's/{{baseName}}/${{ inputs.base-name }}/' service-template.yaml
+    # - name: Archive service
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: service
+    #     path: service-template.yaml
+    # - name: Apply Service to Kubernetes cluster                                                                            
+    #   uses: kodermax/kubectl-aws-eks@master                                                                         
+    #   env:                                                                                                          
+    #     RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
+    #     KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
+    #   with:                                                                                                         
+    #     args: apply -f service-template.yaml
+    # - name: Apply Deployment to Kubernetes cluster                                                                            
+    #   uses: kodermax/kubectl-aws-eks@master                                                                         
+    #   env:                                                                                                          
+    #     RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
+    #     KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
+    #   with:                                                                                                         
+    #     args: apply -f deployment-template.yaml
+
+    # - name: Verify deployment
+    #   uses: kodermax/kubectl-aws-eks@master
+    #   env:
+    #     KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }}
+    #   with:
+    #     args: rollout -n ${{ inputs.kube-namespace }} status deployment/gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }} --timeout=300s
+        
+    # - name: Annotate deployment                                                            
+    #   uses: kodermax/kubectl-aws-eks@master                                                                         
+    #   env:                                                                                                          
+    #     RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
+    #     KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
+    #     GITHUB_SHA: ${{ github.sha }}
+    #   with:                                                                                                         
+    #     args: -n ${{ inputs.kube-namespace }} annotate deployment/gds-api-${{ inputs.base-name }}-${{ inputs.kube-namespace }} kubernetes.io/change-cause='image updated to ${GITHUB_SHA}'
