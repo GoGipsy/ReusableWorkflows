@@ -51,7 +51,7 @@ spec:
           name: logs
       - args:
         - -config.file=/etc/promtail/promtail.yaml
-        image: 809853256122.dkr.ecr.{{aws-region}}.amazonaws.com/gds-promtail:latest
+        image: grafana/promtail
         imagePullPolicy: IfNotPresent
         name: promtail
         ports:
