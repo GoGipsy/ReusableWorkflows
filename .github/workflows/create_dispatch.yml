@@ -6,7 +6,7 @@ on:
       destination: 
         required: true
         type: string
-      environmment:
+      environment:
         required: true
         type: string
       auto-merge: 
@@ -52,7 +52,7 @@ jobs:
         with:
           route: POST /repos/${{ env.DESTINATION_OWNER }}/${{ env.DESTINATION_REPO }}/dispatches
           data: '{
-            event_type: "${{ inputs.environment }}", 
+            event_type: ${{ inputs.environment }}, 
             client_payload: {
               sha: "${{ github.sha }}", 
               from: "${{ github.repository}}", 
