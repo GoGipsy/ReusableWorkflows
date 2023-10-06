@@ -1,0 +1,48 @@
+name: Dispatch to IaC
+on: 
+
+  workflow_call:
+    inputs:
+      destination: 
+        required: true
+        type: string
+      environmment:
+        required: true
+        type: string
+      auto-merge:
+        required: true
+        type: string
+    secrets:
+      token:
+        required: true
+
+env: 
+  DESTINATION_OWNER: ${{ github.repository_owner }}
+  DESTINATION_REPO: ${{ inputs.destination }}
+
+  
+jobs:
+
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: create a repository_dispatch event
+        id: post_dispatches
+        uses: octokit/request-action@v2.x
+        env:
+          GITHUB_TOKEN: ${{ secrets.token }}    
+        with:
+          route: POST /repos/${{ env.DESTINATION_OWNER }}/${{ env.DESTINATION_REPO }}/dispatches
+          data: '{
+            event_type: "${{ inputs.destination }}", 
+            client_payload: {
+              sha: "${{ github.sha }}", 
+              from: "${{ github.repository}}", 
+              branch: "${{ github.ref_name}}",
+              auto-merge: "${{ input.auto-merge }}" 
+            }
+          }'
+            
+  
