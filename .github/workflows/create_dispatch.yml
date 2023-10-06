@@ -9,6 +9,9 @@ on:
       environmment:
         required: true
         type: string
+      auto-merge: 
+        required: true
+        type: string
     secrets:
       app_id:
         required: true
@@ -54,7 +57,7 @@ jobs:
               sha: "${{ github.sha }}", 
               from: "${{ github.repository}}", 
               branch: "${{ github.ref_name}}",
-              auto-merge: "${{ input.auto-merge }}" 
+              auto-merge: "${{ inputs.auto-merge }}" 
             }
           }'
             
