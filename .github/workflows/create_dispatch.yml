@@ -9,9 +9,6 @@ on:
       environmment:
         required: true
         type: string
-      auto-merge:
-        required: true
-        type: string
     secrets:
       app_id:
         required: true
