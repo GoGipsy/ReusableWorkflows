@@ -13,8 +13,10 @@ on:
         required: true
         type: string
     secrets:
-      token:
+      app_id:
         required: true
+      private_key: 
+        required: true      
 
 env: 
   DESTINATION_OWNER: ${{ github.repository_owner }}
@@ -28,11 +30,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Generate a token
+        uses: actions/create-github-app-token@v1
+        id: generate_token
+        with:
+          app_id: ${{ secrets.app_id }}
+          private_key: ${{ secrets.private_key }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Use the token
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          gh api octocat  
+
       - name: create a repository_dispatch event
         id: post_dispatches
         uses: octokit/request-action@v2.x
         env:
-          GITHUB_TOKEN: ${{ secrets.token }}    
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}   
         with:
           route: POST /repos/${{ env.DESTINATION_OWNER }}/${{ env.DESTINATION_REPO }}/dispatches
           data: '{
@@ -45,4 +61,4 @@ jobs:
             }
           }'
             
-  
+    
