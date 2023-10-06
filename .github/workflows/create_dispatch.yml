@@ -52,7 +52,7 @@ jobs:
         with:
           route: POST /repos/${{ env.DESTINATION_OWNER }}/${{ env.DESTINATION_REPO }}/dispatches
           data: '{
-            event_type: "${{ github.repository}}", 
+            event_type: "${{ inputs.environment }}", 
             client_payload: {
               sha: "${{ github.sha }}", 
               from: "${{ github.repository}}", 
