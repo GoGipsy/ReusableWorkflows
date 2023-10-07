@@ -13,14 +13,14 @@ on:
         required: true
         type: string
     secrets:
-      app_id:
+      app-id:
         required: true
-      private_key: 
+      private-key: 
         required: true      
 
 env: 
-  DESTINATION_OWNER: ${{ github.repository_owner }}
-  DESTINATION_REPO: ${{ inputs.destination }}
+  DESTINATION_OWNER: 
+  DESTINATION_REPO: 
 
   
 jobs:
@@ -34,8 +34,8 @@ jobs:
         uses: actions/create-github-app-token@v1
         id: generate_token
         with:
-          app_id: ${{ secrets.app_id }}
-          private_key: ${{ secrets.private_key }}
+          app-id: ${{ secrets.app-id }}
+          private-key: ${{ secrets.private-key }}
           owner: ${{ github.repository_owner }}
 
       - name: Use the token
@@ -50,7 +50,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}   
         with:
-          route: POST /repos/${{ env.DESTINATION_OWNER }}/${{ env.DESTINATION_REPO }}/dispatches
+          route: POST /repos/${{ github.repository_owner }}/${{ inputs.destination }}/dispatches
           data: '{
             event_type: ${{ inputs.environment }}, 
             client_payload: {
