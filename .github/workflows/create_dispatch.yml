@@ -9,6 +9,9 @@ on:
       environment:
         required: true
         type: string
+      release-image: 
+        required: true
+        type: string
       auto-merge: 
         required: true
         type: string
@@ -17,11 +20,6 @@ on:
         required: true
       private-key: 
         required: true      
-
-env: 
-  DESTINATION_OWNER: 
-  DESTINATION_REPO: 
-
   
 jobs:
 
