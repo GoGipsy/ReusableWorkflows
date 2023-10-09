@@ -25,12 +25,15 @@ on:
     outputs:
       release-image:
         description: "Container Image"
-        value: ${{ steps.build-image.outputs.image }}
+        value: ${{ jobs.build-and-publish.outputs.release-image }}
+
 
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-22.04
+    outputs:
+      release-image: ${{ steps.build-image.outputs.image }}
     steps:
     - uses: actions/checkout@v3
       with:
