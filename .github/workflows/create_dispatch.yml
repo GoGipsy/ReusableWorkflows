@@ -9,8 +9,8 @@ on:
       environment:
         required: true
         type: string
-      release-image: 
-        required: false
+      image: 
+        required: true
         type: string
       auto-merge: 
         required: true
