@@ -54,8 +54,8 @@ jobs:
             client_payload: {
               sha: "${{ github.sha }}", 
               from: "${{ github.repository }}", 
-              branch: "${{ github.ref_name }}",
-              release-image: "${{ inputs.release-image }}"
+              branch: "${{ github.ref_name }}", 
+              release-image: "${{ inputs.release-image }}", 
               auto-merge: "${{ inputs.auto-merge }}" 
             }
           }'
