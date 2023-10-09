@@ -22,6 +22,11 @@ on:
         required: true
       aws-secret-access-key:
         required: true
+    outputs:
+      release-image:
+        description: "Container Image"
+        value: ${{ steps.build-image.outputs.image }}
+
 
 jobs:
   build-and-publish:
