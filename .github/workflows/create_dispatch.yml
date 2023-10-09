@@ -10,7 +10,7 @@ on:
         required: true
         type: string
       release-image: 
-        required: true
+        required: false
         type: string
       auto-merge: 
         required: true
