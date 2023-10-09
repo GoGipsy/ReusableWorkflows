@@ -23,9 +23,9 @@ on:
       aws-secret-access-key:
         required: true
     outputs:
-      release-image:
+      image:
         description: "Container Image"
-        value: ${{ jobs.build-and-publish.outputs.release-image }}
+        value: ${{ jobs.build-and-publish.outputs.image }}
 
 
 
@@ -33,7 +33,7 @@ jobs:
   build-and-publish:
     runs-on: ubuntu-22.04
     outputs:
-      release-image: ${{ steps.build-image.outputs.image }}
+      image: ${{ steps.build-image.outputs.image }}
     steps:
     - uses: actions/checkout@v3
       with:
