@@ -55,7 +55,7 @@ jobs:
               sha: "${{ github.sha }}", 
               from: "${{ github.repository }}", 
               branch: "${{ github.ref_name }}", 
-              release-image: "${{ inputs.release-image }}", 
+              image: "${{ inputs.image }}", 
               auto-merge: "${{ inputs.auto-merge }}" 
             }
           }'
