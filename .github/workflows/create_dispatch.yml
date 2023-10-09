@@ -53,8 +53,9 @@ jobs:
             event_type: ${{ inputs.environment }}, 
             client_payload: {
               sha: "${{ github.sha }}", 
-              from: "${{ github.repository}}", 
-              branch: "${{ github.ref_name}}",
+              from: "${{ github.repository }}", 
+              branch: "${{ github.ref_name }}",
+              release-image: "${{ inputs.release-image }}"
               auto-merge: "${{ inputs.auto-merge }}" 
             }
           }'
