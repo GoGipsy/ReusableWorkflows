@@ -10,10 +10,16 @@ on:
         required: true
         type: string
       image: 
-        required: true
+        required: false
+        type: string
+      repository: 
+        required: false
+        type: string
+      registry: 
+        required: false
         type: string
       auto-merge: 
-        required: true
+        required: false
         type: string
     secrets:
       app-id:
@@ -55,7 +61,6 @@ jobs:
               sha: "${{ github.sha }}", 
               from: "${{ github.repository }}", 
               branch: "${{ github.ref_name }}", 
-              image: "${{ inputs.image }}", 
               auto-merge: "${{ inputs.auto-merge }}" 
             }
           }'
