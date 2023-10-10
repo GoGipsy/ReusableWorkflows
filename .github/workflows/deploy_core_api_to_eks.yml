@@ -26,6 +26,12 @@ on:
       image:
         description: "Container Image"
         value: ${{ jobs.build-and-publish.outputs.image }}
+      repository:
+        description: "Container Repository"
+        value: ${{ jobs.build-and-publish.outputs.repository }}
+      registry: 
+        description: "Container Registry"
+        value: ${{ jobs.build-and-publish.outputs.repository }}
       
 
 jobs:
@@ -33,6 +39,8 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       image: ${{ steps.build-image.outputs.image }}
+      regitry: ${{ steps.login-ecr.outputs.registry }}
+      repository: ${{ inputs.base-name }}${{ inputs.repository-sufix }}
     steps:
     - uses: actions/checkout@v3
       with:
@@ -66,6 +74,5 @@ jobs:
         -f ${{ inputs.dockerfile-name }} .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-        echo "::add-mask::$ECR_REGISTRY"
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
         
