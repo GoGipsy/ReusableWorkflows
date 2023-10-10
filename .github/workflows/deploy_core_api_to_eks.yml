@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       image: ${{ steps.build-image.outputs.image }}
-      regitry: "${{ steps.aws-account.outputs.aws-account-id }}.dkr.ecr.${{ inputs.aws-region }}.amazonaws.com"
+      regitry: "${{ vars.GIPSYY_AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.aws-region }}.amazonaws.com"
       repository: ${{ inputs.base-name }}${{ inputs.repository-sufix }}
     steps:
     - uses: actions/checkout@v3
