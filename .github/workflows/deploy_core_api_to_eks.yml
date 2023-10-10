@@ -38,7 +38,8 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       image: ${{ steps.build-image.outputs.image }}
-      image-repo: ${{ steps.build-image.outputs.image-repo }}
+      repository: ${{ inputs.base-name }}${{ inputs.repository-sufix }}
+      registry: ${{ steps.login-ecr.outputs.registry }}
     steps:
     - uses: actions/checkout@v3
       with:
@@ -73,5 +74,4 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-        echo "image-repo=$ECR_REGISTRY/$ECR_REPOSITORY" >> $GITHUB_OUTPUT
         
