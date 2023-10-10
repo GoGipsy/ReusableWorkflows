@@ -31,7 +31,7 @@ on:
         value: ${{ jobs.build-and-publish.outputs.repository }}
       registry: 
         description: "Container Registry"
-        value: ${{ jobs.build-and-publish.outputs.repository }}
+        value: ${{ jobs.build-and-publish.outputs.registry }}
       
 
 jobs:
