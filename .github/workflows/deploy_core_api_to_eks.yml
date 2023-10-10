@@ -26,12 +26,13 @@ on:
       image:
         description: "Container Image"
         value: ${{ jobs.build-and-publish.outputs.image }}
-      image-repo: 
+      repository: 
         description: "Container Repository"
-        value: ${{ jobs.build-and-publish.outputs.image-repo }}
+        value: ${{ jobs.build-and-publish.outputs.repository }}
+      registry: 
+        description: "Docker Registry"
+        value: ${{ jobs.build-and-publish.outputs.registry }}
       
-
-
 
 jobs:
   build-and-publish:
