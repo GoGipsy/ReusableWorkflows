@@ -61,6 +61,9 @@ jobs:
               sha: "${{ github.sha }}", 
               from: "${{ github.repository }}", 
               branch: "${{ github.ref_name }}", 
+              image: "${{ inputs.image }}", 
+              repository: "${{ inputs.repository }}", 
+              registry: "${{ inputs.registry }}", 
               auto-merge: "${{ inputs.auto-merge }}" 
             }
           }'
