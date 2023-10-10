@@ -58,7 +58,7 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
       with: 
-        mask-password: false
+        mask-password: true
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
       env:
@@ -74,6 +74,6 @@ jobs:
         -f ${{ inputs.dockerfile-name }} .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-        IMAGE_BASE64=$(echo -n "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" | base64)
-        echo "image=$IMAGE_BASE64" >> $GITHUB_OUTPUT
+        docker image list --format json 
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
         
