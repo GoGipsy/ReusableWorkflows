@@ -35,7 +35,7 @@ spec:
             topologyKey: kubernetes.io/hostname
       containers:
       - image: 809853256122.dkr.ecr.{{aws-region}}.amazonaws.com/gds-{{kind}}-{{baseName}}{{repository-sufix}}:{{apiImageTag}}
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         name: gds-{{kind}}-{{baseName}}-{{environment}}
         ports:
         - containerPort: 80
@@ -47,32 +47,6 @@ spec:
         - mountPath: /App/appsettings.json
           name: appsettings-volume
           subPath: appsettings.json
-        - mountPath: /App/logs
-          name: logs
-      - args:
-        - -config.file=/etc/promtail/promtail.yaml
-        image: grafana/promtail
-        imagePullPolicy: IfNotPresent
-        name: promtail
-        ports:
-        - containerPort: 3101
-          name: http-metrics
-          protocol: TCP
-        resources: {}
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /etc/promtail
-          name: config
-          readOnly: true
-        - mountPath: /App/logs
-          name: logs
-          readOnly: true
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -86,9 +60,3 @@ spec:
             path: appsettings.json
           name: gds-{{kind}}-{{baseName}}-{{environment}}-appsettings
         name: appsettings-volume
-      - configMap:
-          defaultMode: 420
-          name: promtail-conf
-        name: config
-      - emptyDir: {}
-        name: logs
