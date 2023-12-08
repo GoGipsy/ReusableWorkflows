@@ -1,0 +1,16 @@
+DOTNET_VERSION_PROD: ${{ env.parameters.DOTNET_VERSION }}
+DOTNET_EF_VERSION_PROD: ${{ env.parameters.DOTNET_EF_VERSION }}
+BUILD_CONFIGURATION_PROD: ${{ env.parameters.BUILD_CONFIGURATION }}
+PACKAGE_OUTPUT_DIRECTORY: ${{ github.workspace }}/output
+KUBE_NAMESPACE: core-prod
+KUBE_ENVIRONMENT: kubernetes-prod
+BASE_NAME: arara-core-payments
+AWS_REGION: us-east-2
+API_PROJECT_NAME: Arara.Core.Payments.Api
+DBCONTEXT_PROJECT_NAME: Arara.Core.Payments.Infrastructure
+API_DOCKERFILE_NAME: Api.Dockerfile
+DBCONTEXT_NAME: CorePaymentsDbContext
+DB_HOSTNAME: ${{ secrets.DB_HOSTNAME_PROD }}
+DB_NAME: CORE_PAYMENTS
+DB_USERNAME: ${{ secrets.DB_USERNAME_PROD }}
+DB_PASSWORD: ${{ secrets.DB_PASSWORD_PROD }}

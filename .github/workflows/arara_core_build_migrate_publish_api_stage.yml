@@ -1,111 +1,141 @@
 name: Build and Publish API Core Stage
 
 on:
-  workflow_dispatch:
-  push:
-    branches: [ core-stage ]
-
-env:
-  DOTNET_VERSION: ${{ env.DOTNET_VERSION_STAGE }}
-  DOTNET_EF_VERSION: ${{ env.DOTNET_EF_VERSION_STAGE }}
-  BUILD_CONFIGURATION: ${{ env.BUILD_CONFIGURATION_STAGE }}
-  PACKAGE_OUTPUT_DIRECTORY: ${{ github.workspace }}/output
-  KUBE_NAMESPACE: core-prod
-  KUBE_ENVIRONMENT: kubernetes-prod
-  BASE_NAME: arara-core-payments
-  AWS_REGION: us-east-2
-  API_PROJECT_NAME: Arara.Core.Payments.Api
-  DBCONTEXT_PROJECT_NAME: Arara.Core.Payments.Infrastructure
-  API_DOCKERFILE_NAME: Api.Dockerfile
-  DBCONTEXT_NAME: CorePaymentsDbContext
-  DB_HOSTNAME: ${{ vars.DB_HOSTNAME_PROD }}
-  DB_NAME: CORE_PAYMENTS
-  DB_USERNAME: ${{ vars.DB_USERNAME_PROD }}
-  DB_PASSWORD: ${{ secrets.DB_PASSWORD_PROD }}
-
+  workflow_call:
+    inputs:
+      dotnet_version:
+        required: true
+        type: string
+      dotnet_ef_version:
+        required: true
+        type: string
+      build_configuration:
+        required: true
+        type: string
+      package_output_directory:
+        required: true
+        type: string
+      kube_namespace:
+        required: true
+        type: string
+      kube_environment:
+        required: true
+        type: string
+      base_name:
+        required: true
+        type: string
+      aws_region:
+        required: true
+        type: string
+      api_project_name:
+        required: true
+        type: string
+      dbcontext_project_name:
+        required: true
+        type: string
+      api_dockerfile_nae:
+        required: true
+        type: string
+      dbcontext_name:
+        required: true
+        type: string
+      db_hostname:
+        required: true
+        type: string
+      db_name:
+        required: true
+        type: string
+      db_username:
+        required: true
+        type: string
+      db_password:
+        required: true
+        type: string
 jobs:
-  build:
     runs-on: ubuntu-latest
-    outputs:
-      KUBE_NAMESPACE: ${{ env.KUBE_NAMESPACE }}
-      KUBE_ENVIRONMENT: ${{ env.KUBE_ENVIRONMENT }}
-      BASE_NAME: ${{ env.BASE_NAME }}
-      AWS_REGION: ${{ env.AWS_REGION }}
-      API_DOCKERFILE_NAME: ${{ env.API_DOCKERFILE_NAME }}
     steps:
-    - uses: actions/checkout@v4
-    - name: Install dotnet
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
-    - name: Install dotnet-ef
-      run: dotnet tool update --global dotnet-ef --version ${{ env.DOTNET_EF_VERSION }}
-    - name: Add Source
-      run: dotnet nuget add source ${{ vars.NUGET_SOURCE_URL }} --username ${{ vars.NUGET_USERNAME }} --password ${{ secrets.NUGET_AUTH_TOKEN }} --store-password-in-clear-text
-    - name: Restore
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore --configuration ${{ env.BUILD_CONFIGURATION }}
-    - name: Generate Migrations Script
-      run: |
-        dotnet ef migrations script \
-        --configuration ${{ env.BUILD_CONFIGURATION }} \
-        --output ${{ github.workspace }}/${{ env.DBCONTEXT_NAME }}.sql \
-        --idempotent \
-        --context ${{ env.DBCONTEXT_NAME }} \
-        --project ${{ env.DBCONTEXT_PROJECT_NAME }}/${{ env.DBCONTEXT_PROJECT_NAME }}.csproj \
-        --startup-project ${{ env.API_PROJECT_NAME }}/${{ env.API_PROJECT_NAME }}.csproj \
-        --no-build \
-        --verbose
+      build:
+      outputs:
+        KUBE_NAMESPACE: ${{ env.KUBE_NAMESPACE }}
+        KUBE_ENVIRONMENT: ${{ env.KUBE_ENVIRONMENT }}
+        BASE_NAME: ${{ env.BASE_NAME }}
+        AWS_REGION: ${{ env.AWS_REGION }}
+        API_DOCKERFILE_NAME: ${{ env.API_DOCKERFILE_NAME }}
+      steps:
+      - uses: actions/checkout@v4
+      - name: Install dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Install dotnet-ef
+        run: dotnet tool update --global dotnet-ef --version ${{ env.DOTNET_EF_VERSION }}
+      - name: Add Source
+        run: dotnet nuget add source ${{ vars.NUGET_SOURCE_URL }} --username ${{ vars.NUGET_USERNAME }} --password ${{ secrets.NUGET_AUTH_TOKEN }} --store-password-in-clear-text
+      - name: Restore
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore --configuration ${{ env.BUILD_CONFIGURATION }}
+      - name: Generate Migrations Script
+        run: |
+          dotnet ef migrations script \
+          --configuration ${{ env.BUILD_CONFIGURATION }} \
+          --output ${{ github.workspace }}/${{ env.DBCONTEXT_NAME }}.sql \
+          --idempotent \
+          --context ${{ env.DBCONTEXT_NAME }} \
+          --project ${{ env.DBCONTEXT_PROJECT_NAME }}/${{ env.DBCONTEXT_PROJECT_NAME }}.csproj \
+          --startup-project ${{ env.API_PROJECT_NAME }}/${{ env.API_PROJECT_NAME }}.csproj \
+          --no-build \
+          --verbose
 
-    - name: Publish
-      run: |
-        dotnet publish ${{ env.API_PROJECT_NAME }}/${{ env.API_PROJECT_NAME }}.csproj \
-        --configuration ${{ env.BUILD_CONFIGURATION }} \
-        --output '${{ env.PACKAGE_OUTPUT_DIRECTORY }}'
-        mv ${{ env.API_PROJECT_NAME }}/${{ env.API_DOCKERFILE_NAME }} \
-        ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
+      - name: Publish
+        run: |
+          dotnet publish ${{ env.API_PROJECT_NAME }}/${{ env.API_PROJECT_NAME }}.csproj \
+          --configuration ${{ env.BUILD_CONFIGURATION }} \
+          --output '${{ env.PACKAGE_OUTPUT_DIRECTORY }}'
+          mv ${{ env.API_PROJECT_NAME }}/${{ env.API_DOCKERFILE_NAME }} \
+          ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
 
-    - name: Archive build artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: build
-        path: ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
+      - name: Archive build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
 
-    - name: Archive migrate artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: migrate
-        path: ${{ github.workspace }}/${{ env.DBCONTEXT_NAME }}.sql
+      - name: Archive migrate artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: migrate
+          path: ${{ github.workspace }}/${{ env.DBCONTEXT_NAME }}.sql
 
-  migrate:
-    needs: [build]
-    runs-on: ${{ needs.build.outputs.KUBE_ENVIRONMENT }}
-    steps:
-    - uses: actions/download-artifact@v3
-      with:
-        name: migrate
-    - name: Install psql
-      run: | 
-        sudo apt-get install -y postgresql-client
-        sudo apt-get install -y postgresql-common
-    - name: Update Database
-      run: |
-        export PGPASSWORD="${{ env.DB_PASSWORD }}"
-        psql \
-        postgresql://${{ env.DB_HOSTNAME }}/${{ env.DB_NAME }}?user=${{ env.DB_USERNAME }} \
-        --echo-all \
-        --file=${{ github.workspace }}/${{ env.DBCONTEXT_NAME }}.sql
+      migrate:
+        needs: [build]
+        runs-on: ${{ needs.build.outputs.KUBE_ENVIRONMENT }}
+        steps:
+        - uses: actions/download-artifact@v3
+          with:
+            name: migrate
+        - name: Install psql
+          run: | 
+            sudo apt-get install -y postgresql-client
+            sudo apt-get install -y postgresql-common
+        - name: Update Database
+          run: |
+            export PGPASSWORD="${{ env.DB_PASSWORD }}"
+            psql \
+            postgresql://${{ env.DB_HOSTNAME }}/${{ env.DB_NAME }}?user=${{ env.DB_USERNAME }} \
+            --echo-all \
+            --file=${{ github.workspace }}/${{ env.DBCONTEXT_NAME }}.sql
 
-  publish:
-    needs: [build,migrate]
-    uses: GoGipsy/ReusableWorkflows/.github/workflows/deploy_core_api_to_eks.yml@master
-    with:
-      aws-region: ${{ needs.build.outputs.AWS_REGION }}
-      base-name: ${{ needs.build.outputs.BASE_NAME }}
-      repository-sufix: "-api" 
-      dockerfile-name: ${{ needs.build.outputs.API_DOCKERFILE_NAME }}
-      build-artifact-name: build
-    secrets:
-      aws-access-key-id: ${{ secrets.GDS_AWS_ACCESS_KEY }}
-      aws-secret-access-key: ${{ secrets.GDS_AWS_SECRET_KEY }}
+      publish:
+        needs: [build,migrate]
+        uses: GoGipsy/ReusableWorkflows/.github/workflows/deploy_core_api_to_eks.yml@master
+        with:
+          aws-region: ${{ needs.build.outputs.AWS_REGION }}
+          base-name: ${{ needs.build.outputs.BASE_NAME }}
+          repository-sufix: "-api" 
+          dockerfile-name: ${{ needs.build.outputs.API_DOCKERFILE_NAME }}
+          build-artifact-name: build
+        secrets:
+          aws-access-key-id: ${{ secrets.GDS_AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.GDS_AWS_SECRET_KEY }}
+  
