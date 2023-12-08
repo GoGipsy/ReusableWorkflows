@@ -1,0 +1,16 @@
+DOTNET_VERSION: 7.0.x
+DOTNET_EF_VERSION: 7.0.*
+BUILD_CONFIGURATION: Release
+PACKAGE_OUTPUT_DIRECTORY: ${{ github.workspace }}/output
+KUBE_NAMESPACE: core-stage
+KUBE_ENVIRONMENT: kubernetes-stage
+BASE_NAME: arara-core-payments
+AWS_REGION: us-east-1
+API_PROJECT_NAME: Arara.Core.Payments.Api
+DBCONTEXT_PROJECT_NAME: Arara.Core.Payments.Infrastructure
+API_DOCKERFILE_NAME: Api.Dockerfile
+DBCONTEXT_NAME: CorePaymentsDbContext
+DB_HOSTNAME: ${{ vars.DB_HOSTNAME_STAGE }}
+DB_NAME: CORE_PAYMENTS
+DB_USERNAME: ${{ vars.DB_USERNAME_STAGE }}
+DB_PASSWORD: ${{ secrets.DB_PASSWORD_STAGE }}
