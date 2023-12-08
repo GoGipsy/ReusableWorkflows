@@ -51,7 +51,7 @@ on:
       db_password:
         required: true
         type: string
-jobs:
+  jobs:
     runs-on: ubuntu-latest
     steps:
       build:
