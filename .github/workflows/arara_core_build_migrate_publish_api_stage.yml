@@ -55,56 +55,56 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     outputs:
-      KUBE_NAMESPACE: ${{ env.KUBE_NAMESPACE }}
-      KUBE_ENVIRONMENT: ${{ env.KUBE_ENVIRONMENT }}
-      BASE_NAME: ${{ env.BASE_NAME }}
-      AWS_REGION: ${{ env.AWS_REGION }}
-      API_DOCKERFILE_NAME: ${{ env.API_DOCKERFILE_NAME }}
+      KUBE_NAMESPACE: ${{ inputs.KUBE_NAMESPACE }}
+      KUBE_ENVIRONMENT: ${{ inputs.KUBE_ENVIRONMENT }}
+      BASE_NAME: ${{ inputs.BASE_NAME }}
+      AWS_REGION: ${{ inputs.AWS_REGION }}
+      API_DOCKERFILE_NAME: ${{ inputs.API_DOCKERFILE_NAME }}
     steps:
     - uses: actions/checkout@v4
     - name: Install dotnet
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        dotnet-version: ${{ inputs.DOTNET_VERSION }}
     - name: Install dotnet-ef
-      run: dotnet tool update --global dotnet-ef --version ${{ env.DOTNET_EF_VERSION }}
+      run: dotnet tool update --global dotnet-ef --version ${{ inputs.DOTNET_EF_VERSION }}
     - name: Add Source
       run: dotnet nuget add source ${{ vars.NUGET_SOURCE_URL }} --username ${{ vars.NUGET_USERNAME }} --password ${{ secrets.NUGET_AUTH_TOKEN }} --store-password-in-clear-text
     - name: Restore
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore --configuration ${{ env.BUILD_CONFIGURATION }}
+      run: dotnet build --no-restore --configuration ${{ inputs.BUILD_CONFIGURATION }}
     - name: Generate Migrations Script
       run: |
         dotnet ef migrations script \
-        --configuration ${{ env.BUILD_CONFIGURATION }} \
-        --output ${{ github.workspace }}/${{ env.DBCONTEXT_NAME }}.sql \
+        --configuration ${{ inputs.BUILD_CONFIGURATION }} \
+        --output ${{ github.workspace }}/${{ inputs.DBCONTEXT_NAME }}.sql \
         --idempotent \
-        --context ${{ env.DBCONTEXT_NAME }} \
-        --project ${{ env.DBCONTEXT_PROJECT_NAME }}/${{ env.DBCONTEXT_PROJECT_NAME }}.csproj \
-        --startup-project ${{ env.API_PROJECT_NAME }}/${{ env.API_PROJECT_NAME }}.csproj \
+        --context ${{ inputs.DBCONTEXT_NAME }} \
+        --project ${{ inputs.DBCONTEXT_PROJECT_NAME }}/${{ inputs.DBCONTEXT_PROJECT_NAME }}.csproj \
+        --startup-project ${{ inputs.API_PROJECT_NAME }}/${{ inputs.API_PROJECT_NAME }}.csproj \
         --no-build \
         --verbose
 
     - name: Publish
       run: |
-        dotnet publish ${{ env.API_PROJECT_NAME }}/${{ env.API_PROJECT_NAME }}.csproj \
-        --configuration ${{ env.BUILD_CONFIGURATION }} \
-        --output '${{ env.PACKAGE_OUTPUT_DIRECTORY }}'
-        mv ${{ env.API_PROJECT_NAME }}/${{ env.API_DOCKERFILE_NAME }} \
-        ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
+        dotnet publish ${{ inputs.API_PROJECT_NAME }}/${{ inputs.API_PROJECT_NAME }}.csproj \
+        --configuration ${{ inputs.BUILD_CONFIGURATION }} \
+        --output '${{ inputs.PACKAGE_OUTPUT_DIRECTORY }}'
+        mv ${{ inputs.API_PROJECT_NAME }}/${{ inputs.API_DOCKERFILE_NAME }} \
+        ${{ inputs.PACKAGE_OUTPUT_DIRECTORY }}
 
     - name: Archive build artifact
       uses: actions/upload-artifact@v3
       with:
         name: build
-        path: ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
+        path: ${{ inputs.PACKAGE_OUTPUT_DIRECTORY }}
 
     - name: Archive migrate artifact
       uses: actions/upload-artifact@v3
       with:
         name: migrate
-        path: ${{ github.workspace }}/${{ env.DBCONTEXT_NAME }}.sql
+        path: ${{ github.workspace }}/${{ inputs.DBCONTEXT_NAME }}.sql
 
     migrate:
       needs: [build]
@@ -119,11 +119,11 @@ jobs:
           sudo apt-get install -y postgresql-common
       - name: Update Database
         run: |
-          export PGPASSWORD="${{ env.DB_PASSWORD }}"
+          export PGPASSWORD="${{ inputs.DB_PASSWORD }}"
           psql \
-          postgresql://${{ env.DB_HOSTNAME }}/${{ env.DB_NAME }}?user=${{ env.DB_USERNAME }} \
+          postgresql://${{ inputs.DB_HOSTNAME }}/${{ inputs.DB_NAME }}?user=${{ inputs.DB_USERNAME }} \
           --echo-all \
-          --file=${{ github.workspace }}/${{ env.DBCONTEXT_NAME }}.sql
+          --file=${{ github.workspace }}/${{ inputs.DBCONTEXT_NAME }}.sql
 
     publish:
       needs: [build,migrate]
