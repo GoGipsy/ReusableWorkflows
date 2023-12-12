@@ -52,9 +52,8 @@ on:
         required: true
         type: string
 jobs:
-  runs-on: ubuntu-latest
-  steps:
-    build:
+  build:
+    runs-on: ubuntu-20.04
     outputs:
       KUBE_NAMESPACE: ${{ env.KUBE_NAMESPACE }}
       KUBE_ENVIRONMENT: ${{ env.KUBE_ENVIRONMENT }}
