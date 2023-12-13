@@ -54,12 +54,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-20.04
-    outputs:
-      KUBE_NAMESPACE: ${{ inputs.KUBE_NAMESPACE }}
-      KUBE_ENVIRONMENT: ${{ inputs.KUBE_ENVIRONMENT }}
-      BASE_NAME: ${{ inputs.BASE_NAME }}
-      AWS_REGION: ${{ inputs.AWS_REGION }}
-      API_DOCKERFILE_NAME: ${{ inputs.API_DOCKERFILE_NAME }}
     steps:
     - uses: actions/checkout@v4
     - name: Install dotnet
@@ -105,36 +99,42 @@ jobs:
       with:
         name: migrate
         path: ${{ github.workspace }}/${{ inputs.DBCONTEXT_NAME }}.sql
+    outputs:
+      KUBE_NAMESPACE: ${{ inputs.KUBE_NAMESPACE }}
+      KUBE_ENVIRONMENT: ${{ inputs.KUBE_ENVIRONMENT }}
+      BASE_NAME: ${{ inputs.BASE_NAME }}
+      AWS_REGION: ${{ inputs.AWS_REGION }}
+      API_DOCKERFILE_NAME: ${{ inputs.API_DOCKERFILE_NAME }}
 
-    migrate:
-      needs: [build]
-      runs-on: ${{ needs.build.outputs.KUBE_ENVIRONMENT }}
-      steps:
-      - uses: actions/download-artifact@v3
-        with:
-          name: migrate
-      - name: Install psql
-        run: | 
-          sudo apt-get install -y postgresql-client
-          sudo apt-get install -y postgresql-common
-      - name: Update Database
-        run: |
-          export PGPASSWORD="${{ inputs.DB_PASSWORD }}"
-          psql \
-          postgresql://${{ inputs.DB_HOSTNAME }}/${{ inputs.DB_NAME }}?user=${{ inputs.DB_USERNAME }} \
-          --echo-all \
-          --file=${{ github.workspace }}/${{ inputs.DBCONTEXT_NAME }}.sql
-
-    publish:
-      needs: [build,migrate]
-      uses: GoGipsy/ReusableWorkflows/.github/workflows/deploy_core_api_to_eks.yml@master
+  migrate:
+    needs: [build]
+    runs-on: ${{ needs.build.outputs.KUBE_ENVIRONMENT }}
+    steps:
+    - uses: actions/download-artifact@v3
       with:
-        aws-region: ${{ needs.build.outputs.AWS_REGION }}
-        base-name: ${{ needs.build.outputs.BASE_NAME }}
-        repository-sufix: "-api" 
-        dockerfile-name: ${{ needs.build.outputs.API_DOCKERFILE_NAME }}
-        build-artifact-name: build
-      secrets:
-        aws-access-key-id: ${{ secrets.GDS_AWS_ACCESS_KEY }}
-        aws-secret-access-key: ${{ secrets.GDS_AWS_SECRET_KEY }}
+        name: migrate
+    - name: Install psql
+      run: | 
+        sudo apt-get install -y postgresql-client
+        sudo apt-get install -y postgresql-common
+    - name: Update Database
+      run: |
+        export PGPASSWORD="${{ inputs.DB_PASSWORD }}"
+        psql \
+        postgresql://${{ inputs.DB_HOSTNAME }}/${{ inputs.DB_NAME }}?user=${{ inputs.DB_USERNAME }} \
+        --echo-all \
+        --file=${{ github.workspace }}/${{ inputs.DBCONTEXT_NAME }}.sql
+
+  publish:
+    needs: [build,migrate]
+    uses: GoGipsy/ReusableWorkflows/.github/workflows/deploy_core_api_to_eks.yml@master
+    with:
+      aws-region: ${{ needs.build.outputs.AWS_REGION }}
+      base-name: ${{ needs.build.outputs.BASE_NAME }}
+      repository-sufix: "-api" 
+      dockerfile-name: ${{ needs.build.outputs.API_DOCKERFILE_NAME }}
+      build-artifact-name: build
+    secrets:
+      aws-access-key-id: ${{ secrets.GDS_AWS_ACCESS_KEY }}
+      aws-secret-access-key: ${{ secrets.GDS_AWS_SECRET_KEY }}
   
