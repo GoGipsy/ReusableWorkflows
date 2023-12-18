@@ -12,9 +12,9 @@ jobs:
     outputs:
       package-auth-token: ${{ secrets.GITHUB_TOKEN }}
 
-    #steps:
+    steps:
       #- uses: actions/checkout@v4
-      #- name: Create Package-Auth-Token
+      - name: Create Package-Auth-Token
         #id: Create-package-auth-token
 
 
