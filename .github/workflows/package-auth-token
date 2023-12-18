@@ -1,1 +1,22 @@
+name: package-auth-token
+on: 
+  workflow_call:
+    outputs:
+      value:
+        description: "Create token"
+        value: ${{ jobs.build-and-publish.outputs.image }}
 
+jobs:
+  Create-package-auth-token:
+    runs-on: ubuntu-latest
+    outputs:
+      package-auth-token: ${{ secrets.GITHUB_TOKEN }}
+
+    #steps:
+      #- uses: actions/checkout@v4
+      #- name: Create Package-Auth-Token
+        #id: Create-package-auth-token
+
+
+            
+    
