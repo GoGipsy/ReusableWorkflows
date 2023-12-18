@@ -14,7 +14,8 @@ jobs:
 
     #steps:
       #- uses: actions/checkout@v4
-      #- name: Create Package-Auth-Token
+      - name: Create Package-Auth-Token
+        run: echo Create Package-Auth-Token
         #id: Create-package-auth-token
 
 
