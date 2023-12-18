@@ -2,12 +2,12 @@ name: package-auth-token
 on: 
   workflow_call:
     outputs:
-      value:
+      value: 
         description: "Create token"
-        value: ${{ jobs.build-and-publish.outputs.image }}
+        value: ${{ jobs.create-package-auth-token.outputs.package-auth-token }}
 
 jobs:
-  Create-package-auth-token:
+  create-package-auth-token:
     runs-on: ubuntu-latest
     outputs:
       package-auth-token: ${{ secrets.GITHUB_TOKEN }}
