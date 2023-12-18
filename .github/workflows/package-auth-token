@@ -4,7 +4,7 @@ on:
     outputs:
       value: 
         description: "Create token"
-        value: ${{ jobs.create-package-auth-token.outputs.package-auth-token }}
+        value: ${{ jobs.create.outputs.package-auth-token }}
 
 jobs:
   create:
