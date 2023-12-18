@@ -2,7 +2,7 @@ name: package-auth-token
 on: 
   workflow_call:
     outputs:
-      value: 
+      token: 
         description: "Create token"
         value: ${{ jobs.create.outputs.package-auth-token }}
 
