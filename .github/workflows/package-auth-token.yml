@@ -10,14 +10,12 @@ jobs:
   create:
     runs-on: ubuntu-latest
     outputs:
-      package-auth-token: ${{ secrets.GITHUB_TOKEN }}
+      package-auth-token: ${{ steps.auth-token.value }}
 
     steps:
       #- uses: actions/checkout@v4
       - name: Create Package-Auth-Token
-        run:  echo Create Package-Auth-Token
-        #id: Create-package-auth-token
-
-
-            
-    
+        env: 
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "value=$TOKEN" >> $GITHUB_OUTPUT
+        id: auth-token
