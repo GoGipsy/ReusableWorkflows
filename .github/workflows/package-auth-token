@@ -4,10 +4,10 @@ on:
     outputs:
       value: 
         description: "Create token"
-        value: ${{ jobs.create-package-auth-token.outputs.package-auth-token }}
+        value: ${{ jobs.create.outputs.package-auth-token }}
 
 jobs:
-  create-package-auth-token:
+  create:
     runs-on: ubuntu-latest
     outputs:
       package-auth-token: ${{ secrets.GITHUB_TOKEN }}
