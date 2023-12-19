@@ -96,3 +96,9 @@ spec:
             path: appsettings.json
           name: gds-{{kind}}-{{baseName}}-{{environment}}-appsettings
         name: appsettings-volume
+      - configMap:
+          defaultMode: 420
+          name: promtail-conf
+        name: config
+      - emptyDir: {}
+        name: logs  
