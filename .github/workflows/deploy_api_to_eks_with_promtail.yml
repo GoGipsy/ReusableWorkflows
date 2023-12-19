@@ -107,20 +107,20 @@ jobs:
         path: deployment-template-with-promtail.yaml
     - name: Configure Service Template
       run: |
-        sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' service-template-with-promtail.yaml
-        sed -i 's/{{baseName}}/${{ inputs.base-name }}/' service-template-with-promtail.yaml
+        sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' service-template.yaml
+        sed -i 's/{{baseName}}/${{ inputs.base-name }}/' template.yaml.yaml
     - name: Archive service
       uses: actions/upload-artifact@v2
       with:
         name: service
-        path: service-template-with-promtail.yaml
+        path: template.yaml.yaml
     - name: Apply Service to Kubernetes cluster                                                                            
       uses: kodermax/kubectl-aws-eks@master                                                                         
       env:                                                                                                          
         RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
         KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
       with:                                                                                                         
-        args: apply -f service-template-with-promtail.yaml
+        args: apply -f service-template.yaml
     - name: Apply Deployment to Kubernetes cluster                                                                            
       uses: kodermax/kubectl-aws-eks@master                                                                         
       env:                                                                                                          
