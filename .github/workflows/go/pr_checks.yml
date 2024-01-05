@@ -1,0 +1,52 @@
+name: Pull Request Checks
+
+on:
+  workflow_call:
+    inputs:
+      coverage-threshold:
+        description: "The minimum coverage threshold. Below this, the workflow will fail."
+        required: false
+        default: 90
+      go-version:
+        description: "Go version"
+        required: false
+        default: 1.21
+      runs-on:
+        description: "Runner to use"
+        required: false
+        default: ubuntu-latest
+
+jobs:
+  lint:
+    runs-on: ${{ github.event.inputs.runs-on }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ github.event.inputs.go-version }}
+          cache: false
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.54
+
+  test:
+    runs-on: ${{ github.event.inputs.runs-on }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ github.event.inputs.go-version }}
+          cache: false
+      - name: Run tests
+        run: go test -v ./...
+      - name: Coverage
+        run: go test -coverprofile=coverage.out ./...
+      - name: Coverage threshold
+        run: |
+          threshold=${{ github.event.inputs.coverage-threshold }}
+          coverage=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+          if [ $coverage -lt $threshold ]; then
+            echo "Coverage is below threshold ($coverage < $threshold)"
+            exit 1
+          fi
