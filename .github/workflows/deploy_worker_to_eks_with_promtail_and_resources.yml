@@ -96,7 +96,7 @@ jobs:
       run: |
         sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' deployment-template-with-promtail-with-resources.yaml
         sed -i 's/{{baseName}}/${{ inputs.base-name }}/' deployment-template-with-promtail-with-resources.yaml
-        sed -i 's/{{kind}}/api/' deployment-template-with-promtail-with-resources.yaml
+        sed -i 's/{{kind}}/worker/' deployment-template-with-promtail-with-resources.yaml
         sed -i 's/{{apiImageTag}}/${{ github.sha }}/' deployment-template-with-promtail-with-resources.yaml
         sed -i 's/{{aws-region}}/${{ inputs.aws-region }}/' deployment-template-with-promtail-with-resources.yaml
         sed -i 's/{{repository-sufix}}/${{ inputs.repository-sufix }}/' deployment-template-with-promtail-with-resources.yaml
