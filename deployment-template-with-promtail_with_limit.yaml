@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: gds-{{kind}}-{{baseName}}-{{environment}}
+  name: gds-{{kind}}-{{baseName}}-{{environment}}
+  namespace: {{environment}}
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: gds-{{kind}}-{{baseName}}-{{environment}}
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: gds-{{kind}}-{{baseName}}-{{environment}}
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - gds-{{kind}}-{{baseName}}-{{environment}}
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - image: 809853256122.dkr.ecr.{{aws-region}}.amazonaws.com/gds-{{kind}}-{{baseName}}{{repository-sufix}}:{{apiImageTag}}
+        imagePullPolicy: IfNotPresent
+        name: gds-{{kind}}-{{baseName}}-{{environment}}
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 1500m
+            memory: 16Gi
+          requests:
+            cpu: 30m
+            memory: 8Gi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /App/appsettings.json
+          name: appsettings-volume
+          subPath: appsettings.json
+        - mountPath: /App/logs
+          name: logs
+      - image: docker.io/grafana/promtail:2.4.2
+        args:
+        - -config.file=/etc/promtail/promtail.yaml
+        imagePullPolicy: IfNotPresent
+        name: promtail
+        ports:
+        - containerPort: 3101
+          name: http-metrics
+          protocol: TCP
+        # readinessProbe:
+        #   failureThreshold: 5
+        #   httpGet:
+        #     path: /ready
+        #     port: http-metrics
+        #     scheme: HTTP
+        #   initialDelaySeconds: 10
+        #   periodSeconds: 10
+        #   successThreshold: 1
+        #   timeoutSeconds: 1
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/promtail
+          name: config
+          readOnly: true
+        - mountPath: /App/logs
+          name: logs
+          readOnly: true    
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: appsettings.json
+            path: appsettings.json
+          name: gds-{{kind}}-{{baseName}}-{{environment}}-appsettings
+        name: appsettings-volume
+      - configMap:
+          defaultMode: 420
+          name: promtail-conf
+        name: config
+      - emptyDir: {}
+        name: logs  
