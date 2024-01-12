@@ -20,15 +20,6 @@ on:
       repository-sufix:
         required: false
         type: string
-      repository-sufix:
-        required: false
-        type: string
-      requested-memory:
-        required: true
-        type: string
-      limit-memory:
-        required: true
-        type: string
     secrets:
       aws-access-key-id:
         required: true
