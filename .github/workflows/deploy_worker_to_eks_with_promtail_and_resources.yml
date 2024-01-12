@@ -103,17 +103,17 @@ jobs:
         args: -n ${{ inputs.kube-namespace }} apply -f configmap.yaml
     - name: Configure Deployment Template
       run: |
-        sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' deployment-template-with-promtail_with_limit.yaml
-        sed -i 's/{{baseName}}/${{ inputs.base-name }}/' deployment-template-with-promtail_with_limit.yaml
-        sed -i 's/{{kind}}/api/' deployment-template-with-promtail_with_limit.yaml
-        sed -i 's/{{apiImageTag}}/${{ github.sha }}/' deployment-template-with-promtail_with_limit.yaml
-        sed -i 's/{{aws-region}}/${{ inputs.aws-region }}/' deployment-template-with-promtail_with_limit.yaml
-        sed -i 's/{{repository-sufix}}/${{ inputs.repository-sufix }}/' deployment-template-with-promtail_with_limit.yaml
+        sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' deployment-template-with-promtail-with-resources.yaml
+        sed -i 's/{{baseName}}/${{ inputs.base-name }}/' deployment-template-with-promtail-with-resources.yaml
+        sed -i 's/{{kind}}/api/' deployment-template-with-promtail-with-resources.yaml
+        sed -i 's/{{apiImageTag}}/${{ github.sha }}/' deployment-template-with-promtail-with-resources.yaml
+        sed -i 's/{{aws-region}}/${{ inputs.aws-region }}/' deployment-template-with-promtail-with-resources.yaml
+        sed -i 's/{{repository-sufix}}/${{ inputs.repository-sufix }}/' deployment-template-with-promtail-with-resources.yaml
     - name: Archive deployment
       uses: actions/upload-artifact@v2
       with:
         name: deployment
-        path: deployment-template-with-promtail_with_limit.yaml
+        path: deployment-template-with-promtail-with-resources.yaml
     - name: Configure Service Template
       run: |
         sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' service-template.yaml
@@ -136,7 +136,7 @@ jobs:
         RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
         KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
       with:                                                                                                         
-        args: apply -f deployment-template-with-promtail_with_limit.yaml
+        args: apply -f deployment-template-with-promtail-with-resources.yaml
 
     - name: Verify deployment
       uses: kodermax/kubectl-aws-eks@master
