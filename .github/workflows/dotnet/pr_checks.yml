@@ -1,0 +1,84 @@
+name: Pull Request Checks
+
+on:
+  workflow_call:
+    pull_request:
+      types: [opened, synchronize, reopened, ready_for_review]
+      branches:
+        - master
+        - stage
+        - dev
+        - release/*
+
+    inputs:
+      coverage-threshold:
+        description: "The minimum coverage threshold. Below this, the workflow will fail."
+        required: false
+        default: 90
+      dotnet-version:
+        description: "The version of dotnet to use."
+        required: false
+        default: 5.0
+      runs-on:
+        description: "Runner to use. Always try to use self-hosted runners."
+        required: false
+        default: ubuntu-latest
+
+jobs:
+  lint:
+    runs-on: ${{ github.event.inputs.runs-on }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ github.event.inputs.dotnet-version }}
+
+      - name: Install dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal
+  
+  test:
+    runs-on: ${{ github.event.inputs.runs-on }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ github.event.inputs.dotnet-version }}
+
+      - name: Install dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal
+
+      - name: Coverage
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+      - run: dotnet test --collect:"XPlat Code Coverage" --results-directory:TestResults --logger trx
+      - run: reportgenerator "-reports:TestResults/**/coverage.cobertura.xml" "-targetdir:coveragereport" -reporttypes:HtmlInline_AzurePipelines
+      - uses: actions/upload-artifact@v2
+        with:
+          name: coverage-report
+          path: coveragereport
+
+      - name: Coverage threshold
+        run: |
+          $threshold = ${{ github.event.inputs.coverage-threshold }}
+          $coverage = [xml] (Get-Content -Path ./coveragereport/Cobertura.xml)
+          $coveragePercent = [int] $coverage.coverage.line.rate * 100
+          if ($coveragePercent -lt $threshold) {
+            throw "Coverage is below threshold. Expected $threshold%, got $coveragePercent%"
+          }
