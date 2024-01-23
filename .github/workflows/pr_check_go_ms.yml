@@ -26,27 +26,27 @@ on:
 
 jobs:
   lint:
-    runs-on: ${{ github.event.inputs.runs-on }}
+    runs-on: ${{ inputs.runs-on }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
-          go-version: '${{ github.event.inputs.go-version }}'
+          go-version: '${{ inputs.go-version }}'
           cache: false
       - name: Lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: '${{ github.event.inputs.go-lint-version }}'
+          version: '${{ inputs.go-lint-version }}'
 
   test:
-    runs-on: ${{ github.event.inputs.runs-on }}
+    runs-on: ${{ inputs.runs-on }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
-          go-version: '${{ github.event.inputs.go-version }}'
+          go-version: '${{ inputs.go-version }}'
           cache: false
       - name: Run tests
         run: go test -v ./...
@@ -54,7 +54,7 @@ jobs:
         run: go test -coverprofile=coverage.out ./...
       - name: Analyze Coverage
         run: |
-          threshold=${{ github.event.inputs.coverage-threshold }}
+          threshold=${{ inputs.coverage-threshold }}
           coverage=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
           if [ $coverage -lt $threshold ]; then
             echo "Coverage is below threshold ($coverage < $threshold)"
