@@ -23,6 +23,11 @@ on:
         description: "Runner to use. Always try to use self-hosted runners."
         required: false
         default: ubuntu-latest
+      enviroments-file-path:
+        type: string
+        description: "Environment variable file. Default value is .env.testing"
+        required: false
+        default: .env.testing
 
 jobs:
   lint:
@@ -48,6 +53,13 @@ jobs:
         with:
           go-version: '${{ inputs.go-version }}'
           cache: false
+      - name: Generate Mocks
+        run: make mocks
+      - name: Load environment variables
+        uses: dotenv-actions/setup-dotenv@v2
+        with:
+          dotenv_path: '${{ inputs.enviroments-file-path }}'
+        run: echo "Host -> $SERVER_HOST"
       - name: Run tests
         run: go test -v ./...
       - name: Get Coverage
