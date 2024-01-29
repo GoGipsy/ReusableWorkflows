@@ -41,6 +41,13 @@ spec:
         - containerPort: 80
           protocol: TCP
         resources: {}
+        livenessProbe:
+          httpGet:
+            path: /internal/healthcheck
+            port: 80
+          initialDelaySeconds: 30
+          failureThreshold: 5
+          periodSeconds: 10
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
