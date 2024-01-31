@@ -1,0 +1,35 @@
+name: E2E Tests
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      test-tag:
+        required: true
+        type: string
+    secrets:
+      gh_pat:
+        required: true
+    
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: GoGipsy/gipsyy-web-e2e-tests
+        ref: ${{ inputs.ref }}
+        token: ${{ secrets.gh_pat }}
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+    - run: npm install
+    - run: npm run gipsyyPT
+    # - name: Archive test result
+    #   if: always()
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: reports
+    #     path: ./reports_web_api
