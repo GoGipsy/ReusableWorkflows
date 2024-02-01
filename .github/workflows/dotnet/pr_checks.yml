@@ -1,84 +1,62 @@
-name: Pull Request Checks
+name: Build and Coverage
 
 on:
-  workflow_call:
-    pull_request:
-      types: [opened, synchronize, reopened, ready_for_review]
-      branches:
-        - master
-        - stage
-        - dev
-        - release/*
-
-    inputs:
-      coverage-threshold:
-        description: "The minimum coverage threshold. Below this, the workflow will fail."
-        required: false
-        default: 90
-      dotnet-version:
-        description: "The version of dotnet to use."
-        required: false
-        default: 5.0
-      runs-on:
-        description: "Runner to use. Always try to use self-hosted runners."
-        required: false
-        default: ubuntu-latest
-
+  workflow_dispatch:
+  push:
+    branches: [ "main", "master", "stage", "dev", "release/*"]
+  pull_request:
+    branches: [ "main", "master", "stage", "dev", "release/*" ]
+    
+env:
+  DOTNET_VERSION: 7.0.x
+  COVERAGE_THRESHOLD: ${{vars.COVERAGE_THRESHOLD}}
+      
 jobs:
-  lint:
-    runs-on: ${{ github.event.inputs.runs-on }}
+  build:
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --no-restore
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: ${{ github.event.inputs.dotnet-version }}
+    - name: Format
+      run: dotnet format --verify-no-changes
+      
+    - name: Test
+      run: dotnet test -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=opencover --no-build --verbosity normal test/TestProject1
+      
+    - name: Create test coverage badge
+      uses: simon-k/dotnet-code-coverage-badge@v1.0.0
+      id: create_coverage_badge
+      with:
+        label: Unit Test Coverage
+        color: brightgreen
+        path: test/TestProject1/TestResults/coverage.opencover.xml
+        gist-filename: code-coverage.json
+        gist-id: 7f68482ee34cdce81dffbbdd6b88f5ac
+        gist-auth-token: ${{ secrets.GIST_AUTH_TOKEN }}  
 
-      - name: Install dependencies
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
-
-      - name: Test
-        run: dotnet test --no-restore --verbosity normal
-  
-  test:
-    runs-on: ${{ github.event.inputs.runs-on }}
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: ${{ github.event.inputs.dotnet-version }}
-
-      - name: Install dependencies
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
-
-      - name: Test
-        run: dotnet test --no-restore --verbosity normal
-
-      - name: Coverage
-        run: dotnet tool install -g dotnet-reportgenerator-globaltool
-      - run: dotnet test --collect:"XPlat Code Coverage" --results-directory:TestResults --logger trx
-      - run: reportgenerator "-reports:TestResults/**/coverage.cobertura.xml" "-targetdir:coveragereport" -reporttypes:HtmlInline_AzurePipelines
-      - uses: actions/upload-artifact@v2
-        with:
-          name: coverage-report
-          path: coveragereport
-
-      - name: Coverage threshold
-        run: |
-          $threshold = ${{ github.event.inputs.coverage-threshold }}
-          $coverage = [xml] (Get-Content -Path ./coveragereport/Cobertura.xml)
-          $coveragePercent = [int] $coverage.coverage.line.rate * 100
-          if ($coveragePercent -lt $threshold) {
-            throw "Coverage is below threshold. Expected $threshold%, got $coveragePercent%"
-          }
+    - name: Report results to DeepSource
+      run: |
+       curl https://deepsource.io/cli | sh
+        ./bin/deepsource report --analyzer test-coverage --key csharp --value-file ./test/TestProject1/TestResults/coverage.opencover.xml
+      env:
+        DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
+        
+    - name: Coverage threshold
+      if: ${{ steps.create_coverage_badge.outputs.percentage < env.COVERAGE_THRESHOLD}}
+      run: |
+        echo "::error title="Coverage threshold"::Coverage is below threshold. Expected ${{env.COVERAGE_THRESHOLD}}%, got ${{steps.create_coverage_badge.outputs.percentage}}%"
+        exit 1
+        
+    
