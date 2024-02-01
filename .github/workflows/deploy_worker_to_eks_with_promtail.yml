@@ -57,7 +57,7 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
         NUGET_SOURCE_URL: ${{ vars.NUGET_SOURCE_URL }}
         NUGET_USERNAME: ${{ vars.NUGET_USERNAME }}
-        NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
+        NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         docker build \
         --build-arg RELEASE_PATH=${{ github.workspace }}/out \
