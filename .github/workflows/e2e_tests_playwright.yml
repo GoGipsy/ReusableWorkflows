@@ -8,18 +8,35 @@ on:
         required: true
         type: string
     secrets:
-      gh_pat:
+      app-id:
         required: true
+      private-key: 
+        required: true  
     
 jobs:
   test:
     runs-on: ubuntu-20.04
     steps:
+    - name: Generate a token
+      uses: actions/create-github-app-token@v1
+      id: generate_token
+      with:
+        app-id: ${{ secrets.app-id }}
+        private-key: ${{ secrets.private-key }}
+        owner: ${{ github.repository_owner }}
+
+    - name: Use the token
+      env:
+        GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+      run: |
+        gh api octocat  
+          
     - uses: actions/checkout@v3
+      env:
+        GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}   
       with:
         repository: GoGipsy/gipsyy-web-e2e-tests
         ref: master
-        token: ${{ secrets.gh_pat }}
 
     - name: Use Node.js
       uses: actions/setup-node@v4
