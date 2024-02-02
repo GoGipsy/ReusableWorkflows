@@ -15,7 +15,7 @@ on:
     
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: kubernetes-stage
     steps:
     - name: Checkout the repository
       uses: actions/checkout@v4
