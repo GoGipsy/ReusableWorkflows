@@ -37,6 +37,8 @@ jobs:
       with:
         repository: GoGipsy/gipsyy-web-e2e-tests
         ref: master
+        token: ${{ steps.generate_token.outputs.token }} 
+        
 
     - name: Use Node.js
       uses: actions/setup-node@v4
