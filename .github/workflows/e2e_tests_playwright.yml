@@ -15,7 +15,7 @@ on:
     
 jobs:
   test:
-    runs-on: kubernetes-stage-pt
+    runs-on: kubernetes-prod
     steps:
     - name: Checkout the repository
       uses: actions/checkout@v4
