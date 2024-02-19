@@ -62,7 +62,7 @@ jobs:
         run: dotnet format --verify-no-changes
 
       - name: Test
-        run: dotnet test -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=opencover --no-build --verbosity normal test/TestProject1
+        run: dotnet test -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=opencover --no-build --verbosity normal
 
       - name: Create test coverage badge
         uses: simon-k/dotnet-code-coverage-badge@v1.0.0
@@ -70,7 +70,7 @@ jobs:
         with:
           label: Unit Test Coverage
           color: brightgreen
-          path: test/TestProject1/TestResults/coverage.opencover.xml
+          path: TestResults/coverage.opencover.xml
           gist-filename: code-coverage.json
           gist-id: 7f68482ee34cdce81dffbbdd6b88f5ac
           gist-auth-token: ${{ secrets.GIST_AUTH_TOKEN }}
