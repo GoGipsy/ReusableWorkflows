@@ -42,7 +42,7 @@ jobs:
         run: dotnet format --verify-no-changes
 
       - name: Test
-        run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+        run: dotnet test --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
 
       - name: Analyze Coverage
         shell: pwsh  
