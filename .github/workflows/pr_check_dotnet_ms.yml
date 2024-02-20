@@ -21,7 +21,7 @@ on:
 
 env:
   PACKAGE_OUTPUT_DIRECTORY: ${{ github.workspace }}/output
-  
+
 jobs:
   build_test_coverage:
     name: Build, Test and Coverage
