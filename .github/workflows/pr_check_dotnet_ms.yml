@@ -19,9 +19,6 @@ on:
         default: ubuntu-latest
         type: string
 
-env:
-  PACKAGE_OUTPUT_DIRECTORY: ${{ github.workspace }}/output
-
 jobs:
   build_test_coverage:
     name: Build, Test and Coverage
@@ -39,7 +36,7 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build --no-restore
+        run: dotnet build --no-restore --configuration Release
 
       - name: Format
         run: dotnet format --verify-no-changes
