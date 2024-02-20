@@ -18,7 +18,10 @@ on:
         required: false
         default: ubuntu-latest
         type: string
-        
+
+env:
+  PACKAGE_OUTPUT_DIRECTORY: ${{ github.workspace }}/output
+  
 jobs:
   build_test_coverage:
     name: Build, Test and Coverage
