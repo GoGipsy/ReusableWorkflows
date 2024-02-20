@@ -1,0 +1,59 @@
+name: Build, Test and Coverage
+
+on:
+  workflow_call:
+    inputs:
+      coverage-threshold:
+        description: "The minimum coverage threshold. Below this, the workflow will fail."
+        required: false
+        default: 90
+        type: string
+      dotnet-version:
+        description: "The version of dotnet to use."
+        required: false
+        default: 7.0.x
+        type: string
+      runs-on:
+        description: "Runner to use. Always try to use self-hosted runners."
+        required: false
+        default: ubuntu-latest
+        type: string
+        
+jobs:
+  build_test_coverage:
+    name: Build, Test and Coverage
+    runs-on: ${{ inputs.runs-on }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Format
+        run: dotnet format --verify-no-changes
+
+      - name: Test
+        run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+      - name: Analyze Coverage
+        shell: pwsh  
+        run: |
+          $covreport = get-childitem -Filter coverage.cobertura.xml -Recurse | Sort-Object -Descending -Property LastWriteTime -Top 1
+          Write-Output $covreport.FullName
+          [xml]$covxml = Get-Content -Path $covreport.FullName
+          $coverage = $covxml.coverage.'line-rate'
+          $threshold=${{inputs.coverage-threshold}} / 100
+          if ( "$coverage" -lt "$threshold" )
+          {
+            echo "Coverage is below threshold ($coverage < $threshold)"
+            exit 1
+          }
