@@ -42,21 +42,18 @@ jobs:
         run: dotnet format --verify-no-changes
 
       - name: Test
-        run: dotnet test -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=opencover --no-build --verbosity normal
+        run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
 
-      - name: Create test coverage badge
-        uses: simon-k/dotnet-code-coverage-badge@v1.0.0
-        id: create_coverage_badge
-        with:
-          label: Unit Test Coverage
-          color: brightgreen
-          path: TestResults/coverage.opencover.xml
-          gist-filename: code-coverage.json
-          gist-id: 7f68482ee34cdce81dffbbdd6b88f5ac
-          gist-auth-token: ${{ secrets.GIST_AUTH_TOKEN }}
-
-      - name: Coverage threshold
-        if: ${{ steps.create_coverage_badge.outputs.percentage < inputs.coverage-threshold }}
+      - name: Analyze Coverage
+        shell: pwsh  
         run: |
-          echo "::error title="Coverage threshold"::Coverage is below threshold. Expected ${{ inputs.coverage-threshold }}%, got ${{ steps.create_coverage_badge.outputs.percentage }}%"
-          exit 1
+          $covreport = get-childitem -Filter coverage.cobertura.xml -Recurse | Sort-Object -Descending -Property LastWriteTime -Top 1
+          Write-Output $covreport.FullName
+          [xml]$covxml = Get-Content -Path $covreport.FullName
+          $coverage = $covxml.coverage.'line-rate'
+          $threshold=${{inputs.coverage-threshold}} / 100
+          if ( "$coverage" -lt "$threshold" )
+          {
+            echo "Coverage is below threshold ($coverage < $threshold)"
+            exit 1
+          }
