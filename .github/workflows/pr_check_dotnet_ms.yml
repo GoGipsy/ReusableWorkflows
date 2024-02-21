@@ -57,3 +57,7 @@ jobs:
             echo "Coverage is below threshold ($coverage < $threshold)"
             exit 1
           }
+          else
+          {
+            echo "Coverage passed ($coverage >= $threshold)"
+          }
