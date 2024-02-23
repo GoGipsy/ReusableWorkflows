@@ -28,8 +28,25 @@ on:
         description: "Environment variable file. Default value is .env.testing"
         required: false
         default: .env.testing
+    secrets:
+      deepsource-dns:
+        description: "DeepSource DSN of this repository"
+        required: true
 
 jobs:
+  build:
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '${{ inputs.go-version }}'
+          cache: false
+      - name: Build project
+        run: go build -a -o app ./cmd
+
   lint:
     runs-on: ${{ inputs.runs-on }}
     steps:
@@ -70,6 +87,12 @@ jobs:
         run: go test -v ./...
       - name: Get Coverage
         run: go test -coverprofile=coverage.out ./...
+      - name: Report test coverage to DeepSource
+        uses: deepsourcelabs/test-coverage-action@master
+        with:
+          key: go
+          coverage-file: coverage.out
+          dsn: ${{ secrets.deepsource-dns }}
       - name: Analyze Coverage
         run: |
           threshold=${{ inputs.coverage-threshold }}
