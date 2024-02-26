@@ -45,6 +45,8 @@ jobs:
           go-version: '${{ inputs.go-version }}'
           cache: false
       - name: Build project
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: go build -a -o app ./cmd
 
   lint:
