@@ -56,10 +56,10 @@ spec:
         resources:
           limits:
             cpu: 4
-            memory: 60Gi
+            memory: 120Gi
           requests:
             cpu: 1
-            memory: 60Gi
+            memory: 120Gi
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
