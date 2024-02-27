@@ -59,7 +59,7 @@ spec:
             memory: 120Gi
           requests:
             cpu: 1
-            memory: 120Gi
+            memory: 50Gi
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
