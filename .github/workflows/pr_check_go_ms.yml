@@ -15,9 +15,9 @@ on:
         default: "1.21"
       go-lint-version:
         type: string
-        description: "Go lint version. Default is v1.54."
+        description: "Go lint version. Default is v1.55.2"
         required: false
-        default: "v1.54"
+        default: "v1.55.2"
       runs-on:
         type: string
         description: "Runner to use. Always try to use self-hosted runners."
@@ -32,9 +32,6 @@ on:
       deepsource-dns:
         description: "DeepSource DSN of this repository"
         required: true
-      gommon-token:
-        description: "Token gommon"
-        required: true
       app-id:
         required: true
       private-key: 
@@ -42,14 +39,19 @@ on:
       
 
 jobs:
-  generate-token:
-    runs-on: ubuntu-latest
-    outputs:
-      token: ${{ steps.generate_token.outputs.token }}
+  build:
+    runs-on: ${{ inputs.runs-on }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '${{ inputs.go-version }}'
+          cache: false
       - name: Generate a token
-        id: generate_token
         uses: actions/create-github-app-token@v1
+        id: generate_token
         with:
           app-id: ${{ secrets.app-id }}
           private-key: ${{ secrets.private-key }}
@@ -58,24 +60,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
-          gh api octocat
-
-
-  build:
-    runs-on: ${{ inputs.runs-on }}
-    needs: generate-token
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '${{ inputs.go-version }}'
-          cache: false     
+          gh api octocat       
       - name: Build project
         env:
           GOPRIVATE: github.com/GoGipsy
-          GITHUB_TOKEN: ${{ needs.generate_token.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
           GIT_TERMINAL_PROMPT: 1
         run: |
           git config --global url.https://github:$GITHUB_TOKEN@github.com/.insteadOf https://github.com/
@@ -91,12 +80,32 @@ jobs:
         with:
           go-version: '${{ inputs.go-version }}'
           cache: false
+      - name: Generate a token
+        uses: actions/create-github-app-token@v1
+        id: generate_token
+        with:
+          app-id: ${{ secrets.app-id }}
+          private-key: ${{ secrets.private-key }}
+          owner: ${{ github.repository_owner }}
+      - name: Use the token
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          gh api octocat       
+      - name: Run tests
+        env:
+          GOPRIVATE: github.com/GoGipsy
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GIT_TERMINAL_PROMPT: 1
+        run: |
+          git config --global url.https://github:$GITHUB_TOKEN@github.com/.insteadOf https://github.com/
+          make download
       - name: Install mockery
         run: go install github.com/vektra/mockery/v2@v2.40.1
       - name: Generate Mocks
         run: make mocks
       - name: Lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v4
         with:
           version: '${{ inputs.go-lint-version }}'
 
@@ -117,8 +126,26 @@ jobs:
         with:
           mode: testing
           load-mode: strict
+      - name: Generate a token
+        uses: actions/create-github-app-token@v1
+        id: generate_token
+        with:
+          app-id: ${{ secrets.app-id }}
+          private-key: ${{ secrets.private-key }}
+          owner: ${{ github.repository_owner }}
+      - name: Use the token
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          gh api octocat       
       - name: Run tests
-        run: go test -v ./...
+        env:
+          GOPRIVATE: github.com/GoGipsy
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GIT_TERMINAL_PROMPT: 1
+        run: |
+          git config --global url.https://github:$GITHUB_TOKEN@github.com/.insteadOf https://github.com/
+          go test -v ./...
       - name: Get Coverage
         run: go test -coverprofile=coverage.out ./...
       - name: Report test coverage to DeepSource
