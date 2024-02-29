@@ -32,6 +32,9 @@ on:
       deepsource-dns:
         description: "DeepSource DSN of this repository"
         required: true
+      gommon-token:
+        description: "Token gommon"
+        required: true
 
 jobs:
   build:
@@ -39,6 +42,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.gommon-token }}
+      - name: Set GOPRIVATE
+        run: echo "export GOPRIVATE=github.com/GoGipsy" >> $GITHUB_ENV
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
