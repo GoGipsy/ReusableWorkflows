@@ -69,7 +69,9 @@ jobs:
           GOPRIVATE: github.com/GoGipsy
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
           GIT_TERMINAL_PROMPT: 1
-        run: go build -a -o app ./cmd
+        run: |
+          git config --global url.https://$GITHUB_TOKEN@github.com/.insteadOf https://github.com/
+          go build -a -o app ./cmd
 
   lint:
     runs-on: ${{ inputs.runs-on }}
