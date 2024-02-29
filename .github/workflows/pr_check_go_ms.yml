@@ -42,15 +42,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.gommon-token }}
-      - name: Set GOPRIVATE
-        run: echo "export GOPRIVATE=github.com/GoGipsy" >> $GITHUB_ENV
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
           go-version: '${{ inputs.go-version }}'
           cache: false
+      - name: Print GITHUB_ACTOR
+        run: echo "El actor de GitHub es ${{ env.GITHUB_ACTOR }}"
+      - name: Configure git for private modules
+        env:
+          TOKEN: ${{ secrets.gommon-token }}
+          GOPRIVATE: "github.com/GoGipsy"
+          GITHUB_USERNAME: ${{ env.GITHUB_ACTOR }}
+        run: git config --global url."@github.com">https://<GITHUB_USERNAME>:${TOKEN}@github.com".insteadOf "https://github.com"
       - name: Build project
         run: go build -a -o app ./cmd
 
