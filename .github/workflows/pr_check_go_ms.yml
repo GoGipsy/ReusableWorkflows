@@ -64,11 +64,6 @@ jobs:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
           gh api octocat       
-      - name: Setup access for private go modules
-        env:
-          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-        run: |
-          git config --global --add url."git@github.com:".insteadOf "https://github.com/"
       - name: Build project
         env:
           GOPRIVATE: github.com/GoGipsy
