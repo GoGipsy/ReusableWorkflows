@@ -68,6 +68,7 @@ jobs:
         env:
           GOPRIVATE: github.com/GoGipsy
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GIT_TERMINAL_PROMPT: 1
         run: go build -a -o app ./cmd
 
   lint:
