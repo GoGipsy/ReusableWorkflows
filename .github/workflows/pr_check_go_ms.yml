@@ -35,6 +35,11 @@ on:
       gommon-token:
         description: "Token gommon"
         required: true
+      app-id:
+        required: true
+      private-key: 
+        required: true 
+      
 
 jobs:
   build:
@@ -47,15 +52,27 @@ jobs:
         with:
           go-version: '${{ inputs.go-version }}'
           cache: false
-      - name: Print GITHUB_ACTOR
-        run: echo "El actor de GitHub es ${{ env.GITHUB_ACTOR }}"
-      - name: Configure git for private modules
+      - name: Generate a token
+        uses: actions/create-github-app-token@v1
+        id: generate_token
+        with:
+          app-id: ${{ secrets.app-id }}
+          private-key: ${{ secrets.private-key }}
+          owner: ${{ github.repository_owner }}
+      - name: Use the token
         env:
-          TOKEN: ${{ secrets.gommon-token }}
-          GOPRIVATE: "github.com/GoGipsy"
-          GITHUB_USERNAME: ${{ env.GITHUB_ACTOR }}
-        run: git config --global url."@github.com">https://<GITHUB_USERNAME>:${TOKEN}@github.com".insteadOf "https://github.com"
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          gh api octocat       
+      - name: Setup access for private go modules
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          git config --global --add url."git@github.com:".insteadOf "https://github.com/"
       - name: Build project
+        env:
+          GOPRIVATE: github.com/GoGipsy
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: go build -a -o app ./cmd
 
   lint:
