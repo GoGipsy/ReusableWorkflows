@@ -117,10 +117,6 @@ jobs:
         with:
           go-version: '${{ inputs.go-version }}'
           cache: false
-      - name: Install mockery
-        run: go install github.com/vektra/mockery/v2@v2.40.1
-      - name: Generate Mocks
-        run: make mocks
       - name: Load .env file
         uses: xom9ikk/dotenv@v2
         with:
@@ -137,7 +133,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
-          gh api octocat       
+          gh api octocat 
+      - name: Install mockery
+        run: go install github.com/vektra/mockery/v2@v2.40.1
       - name: Run tests
         env:
           GOPRIVATE: github.com/GoGipsy
@@ -145,9 +143,11 @@ jobs:
           GIT_TERMINAL_PROMPT: 1
         run: |
           git config --global url.https://github:$GITHUB_TOKEN@github.com/.insteadOf https://github.com/
+          make mocks
           go test -v ./...
-      - name: Get Coverage
-        run: go test -coverprofile=coverage.out ./...
+          go test -coverprofile=coverage.out ./...
+#      - name: Get Coverage
+#        run: go test -coverprofile=coverage.out ./...
       - name: Report test coverage to DeepSource
         uses: deepsourcelabs/test-coverage-action@master
         with:
