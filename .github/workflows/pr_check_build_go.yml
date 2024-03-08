@@ -1,0 +1,50 @@
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        type: string
+        description: "Runner to use. Always try to use self-hosted runners."
+        required: false
+        default: ubuntu-latest
+      go-version:
+        type: string
+        description: "Go version. Default is 1.21."
+        required: false
+        default: "1.21"
+    secrets:
+      app-id:
+        required: true
+      private-key: 
+        required: true
+
+jobs:
+  build:
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '${{ inputs.go-version }}'
+          cache: false
+      - name: Generate a token
+        uses: actions/create-github-app-token@v1
+        id: generate_token
+        with:
+          app-id: ${{ secrets.app-id }}
+          private-key: ${{ secrets.private-key }}
+          owner: ${{ github.repository_owner }}
+      - name: Use the token
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          gh api octocat       
+      - name: Build project
+        env:
+          GOPRIVATE: github.com/GoGipsy
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GIT_TERMINAL_PROMPT: 1
+        run: |
+          git config --global url.https://github:$GITHUB_TOKEN@github.com/.insteadOf https://github.com/
+          go build -a -o app ./cmd
