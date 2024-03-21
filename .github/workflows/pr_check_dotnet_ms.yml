@@ -18,6 +18,21 @@ on:
         required: false
         default: ubuntu-latest
         type: string
+      nuget-source-url:
+        description: "Nuget source url."
+        required: false
+        type: string
+      nuget-user-name:
+        description: "Nuget user name."
+        required: false
+        type: string
+    secrets:
+      nuget-auth-token:
+        description: "Nuget authentication token."
+        required: false
+      deepsource-dns:
+        description: "DeepSource DSN of this repository."
+        required: true
 
 jobs:
   build_test_coverage:
@@ -32,6 +47,12 @@ jobs:
         with:
           dotnet-version: ${{ inputs.dotnet-version }}
 
+      - name: Add Nuget Source
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.nuget-auth-token }}
+        if: ${{ env.NUGET_AUTH_TOKEN != '' }} 
+        run: dotnet nuget add source ${{ inputs.nuget-source-url }} --username ${{ inputs.nuget-user-name }} --password ${{ env.NUGET_AUTH_TOKEN }} --store-password-in-clear-text
+      
       - name: Restore dependencies
         run: dotnet restore
 
@@ -44,20 +65,32 @@ jobs:
       - name: Test
         run: dotnet test --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
 
-      - name: Analyze Coverage
-        shell: pwsh  
+      - name: Find coverage report
+        id: find_coverage
+        shell: pwsh
         run: |
-          $covreport = get-childitem -Filter coverage.cobertura.xml -Recurse | Sort-Object -Descending -Property LastWriteTime -Top 1
-          Write-Output $covreport.FullName
-          [xml]$covxml = Get-Content -Path $covreport.FullName
+          $covreport = Get-ChildItem -Filter coverage.cobertura.xml -Recurse | Sort-Object -Descending -Property LastWriteTime | Select-Object -First 1
+          echo "Coverage report found at $covreport"
+          echo "::set-output name=coverage-report-path::$covreport"
+
+      - name: Report test coverage to DeepSource
+        uses: deepsourcelabs/test-coverage-action@master
+        with:
+          key: csharp
+          coverage-file: ${{ steps.find_coverage.outputs.coverage-report-path }}
+          dsn: ${{ secrets.deepsource-dns }}
+          
+      - name: Analyze Coverage
+        shell: pwsh
+        run: |
+          $covreport = Get-Item -Path ${{ steps.find_coverage.outputs.coverage-report-path }}
+          Write-Output $covreport
+          $covxml = [xml](Get-Content -Path $covreport)
           $coverage = $covxml.coverage.'line-rate'
-          $threshold=${{inputs.coverage-threshold}} / 100
-          if ( "$coverage" -lt "$threshold" )
-          {
-            echo "Coverage is below threshold ($coverage < $threshold)"
+          $threshold = [double]${{inputs.coverage-threshold}} / 100
+          if ($coverage -lt $threshold) {
+            Write-Output "Coverage is below threshold ($coverage < $threshold)"
             exit 1
-          }
-          else
-          {
-            echo "Coverage passed ($coverage >= $threshold)"
+          } else {
+            Write-Output "Coverage passed ($coverage >= $threshold)"
           }
