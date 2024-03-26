@@ -1,0 +1,59 @@
+name: Validate Production SEMVER (Semantic Version)
+
+on:
+  workflow_call:
+
+jobs:
+  validate_and_extract_release_name:
+    # Release name conaforms to the following: v\d+\.\d+\.\d
+    # Example: v1.0.0
+    runs-on: ubuntu-latest
+    outputs:
+      release_name: ${{ steps.get_release_name.outputs.release_name }}
+      semver: ${{ steps.get_semver.outputs.semver }}
+    steps:
+      # Get the release name from the workflow call
+      - name: Get release name
+        id: get_release_name
+        run: |
+          echo "release_name=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+
+      # Validate the release name
+      - name: Validate release name
+        id: validate_release_name
+        run: |
+          if [[ "${{ steps.get_release_name.outputs.release_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Release name is valid"
+          else
+              echo "Release name is invalid"
+              exit 1
+          fi
+
+        # Strip the leading v from the release name
+      - name: Get SEMVER
+        id: get_semver
+        run: |
+          semver=$(echo "${{ steps.get_release_name.outputs.release_name }}" | sed -E 's/^v//')
+          echo "semver=$semver" >> "$GITHUB_OUTPUT"
+          echo Semver is $semver
+
+  # Release notes are required
+  validate_release_notes:
+    runs-on: ubuntu-latest
+    steps:
+      # Get the release notes from the workflow call
+      - name: Get release notes
+        id: get_release_notes
+        run: |
+          echo "release_notes=${{ github.event.release.body }}" >> "$GITHUB_OUTPUT"
+
+      # Validate the release notes
+      - name: Validate release notes
+        id: validate_release_notes
+        run: |
+          if [[ -z "${{ steps.get_release_notes.outputs.release_notes }}" ]]; then
+              echo "Release notes are required"
+              exit 1
+          else
+              echo "Release notes are valid"
+          fi
