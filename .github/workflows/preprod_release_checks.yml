@@ -1,0 +1,38 @@
+name: Validate SEMVER (Semantic Version)
+
+on:
+  workflow_call:
+
+jobs:
+  validate_and_extract_release_name:
+    # Release name conforms to the following: ^v[0-9]+\.[0-9]+\.[0-9]+(-alpha|-beta)?(\.[0-9]+)?$
+    # Example: v1.0.0
+    runs-on: ubuntu-latest
+    outputs:
+      release_name: ${{ steps.get_release_name.outputs.release_name }}
+      semver: ${{ steps.get_semver.outputs.semver }}
+    steps:
+      # Get the release name from the workflow call
+      - name: Get release name
+        id: get_release_name
+        run: |
+          echo "release_name=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+
+      # Validate the release name
+      - name: Validate release name
+        id: validate_release_name
+        run: |
+          if [[ "${{ steps.get_release_name.outputs.release_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-alpha|-beta)?(\.[0-9]+)?$ ]]; then
+              echo "Release name is valid"
+          else
+              echo "Release name is invalid"
+              exit 1
+          fi
+
+        # Strip the leading v from the release name
+      - name: Get SEMVER
+        id: get_semver
+        run: |
+          semver=$(echo "${{ steps.get_release_name.outputs.release_name }}" | sed -E 's/^v//')
+          echo "semver=$semver" >> "$GITHUB_OUTPUT"
+          echo Semver is $semver
