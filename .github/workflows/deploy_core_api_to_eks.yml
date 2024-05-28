@@ -17,6 +17,10 @@ on:
       repository-sufix:
         required: false
         type: string
+      tag-deployment:
+        required: false
+        type: string
+        default: null
     secrets:
       aws-access-key-id:
         required: true
@@ -72,7 +76,7 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: ${{ inputs.base-name }}${{ inputs.repository-sufix }}
-        IMAGE_TAG: ${{ github.sha }}
+        IMAGE_TAG: ${{ inputs.tag-deployment == null && github.sha || inputs.tag-deployment }}
         NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
       run: |
         docker buildx build \
