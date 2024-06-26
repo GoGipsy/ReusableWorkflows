@@ -69,12 +69,12 @@ jobs:
         NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
       run: |
         docker build \
+        --platform="linux/arm64,linux/amd64" \
         --build-arg RELEASE_PATH=${{ github.workspace }}/out \
         -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
         -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
-        -f ${{ inputs.dockerfile-name }} .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        -f ${{ inputs.dockerfile-name }} . \
+        --push
         echo "image=$IMAGE_TAG" >> $GITHUB_OUTPUT
         echo "repository=$ECR_REPOSITORY" >> $GITHUB_OUTPUT
         echo "registry=${{ vars.GIPSYY_AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.aws-region }}.amazonaws.com" >> $GITHUB_OUTPUT
