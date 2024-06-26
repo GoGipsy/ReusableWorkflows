@@ -75,7 +75,7 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
         NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
       run: |
-        docker build \
+        docker buildx build \
         --platform="linux/arm64,linux/amd64" \
         --build-arg RELEASE_PATH=${{ github.workspace }}/out \
         -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
