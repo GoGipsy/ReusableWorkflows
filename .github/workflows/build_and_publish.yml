@@ -4,18 +4,26 @@ on:
     inputs:
       aws-region:
         required: true
+        default: "us-east-1"
         type: string
       base-name:
         required: true
         type: string
       dockerfile-name:
         required: true
+        default: "Dockerfile"
         type: string
       build-artifact-name:
         required: true
+        default: "build"
         type: string
       repository-sufix:
         required: false
+        default: ""
+        type: string
+      platform: 
+        required: false
+        default: "linux/arm64,linux/amd64"
         type: string
     secrets:
       aws-access-key-id:
@@ -76,7 +84,7 @@ jobs:
         NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
       run: |
         docker buildx build \
-        --platform="linux/arm64,linux/amd64" \
+        --platform="${{ inputs.platform }}" \
         --build-arg RELEASE_PATH=${{ github.workspace }}/out \
         -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
         -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
