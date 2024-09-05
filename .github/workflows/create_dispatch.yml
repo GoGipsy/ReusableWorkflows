@@ -13,16 +13,16 @@ on:
         required: true
         type: string
       image: 
-        required: false
+        required: true
         type: string
       tag:
         required: false
         type: string
       repository: 
-        required: false
+        required: true
         type: string
       registry: 
-        required: false
+        required: true
         type: string
       auto-merge: 
         required: false
