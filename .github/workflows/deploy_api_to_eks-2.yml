@@ -80,7 +80,7 @@ jobs:
         cat appsettings.json | sed -e 's/^/        /g' >> configmap.yaml
         
     - name: Archive configmap
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: configmap
         path: configmap.yaml
@@ -101,7 +101,7 @@ jobs:
         sed -i 's/{{aws-region}}/${{ inputs.aws-region }}/' deployment-template.yaml
         sed -i 's/{{repository-sufix}}/${{ inputs.repository-sufix }}/' deployment-template.yaml
     - name: Archive deployment
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: deployment
         path: deployment-template.yaml
@@ -110,7 +110,7 @@ jobs:
         sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' service-template.yaml
         sed -i 's/{{baseName}}/${{ inputs.base-name }}/' service-template.yaml
     - name: Archive service
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: service
         path: service-template.yaml
