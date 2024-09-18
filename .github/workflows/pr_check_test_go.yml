@@ -11,6 +11,11 @@ on:
         description: "Runner to use. Always try to use self-hosted runners."
         required: false
         default: ubuntu-latest
+      coverage-threshold:
+        type: number
+        description: "The minimum coverage threshold. Below this, the workflow will fail."
+        required: false
+        default: 90
     secrets:
       app-id:
         required: true
@@ -64,3 +69,11 @@ jobs:
           key: go
           coverage-file: coverage.out
           dsn: ${{ secrets.deepsource-dns }}
+      - name: Analyze Coverage
+        run: |
+          threshold=${{ inputs.coverage-threshold }}
+          coverage=$(go tool cover -func=coverage.out | grep total | awk '{print int($3)}')
+          if [ "$coverage" -lt "$threshold" ]; then
+            echo "Coverage is below threshold ($coverage < $threshold)"
+            exit 1
+          fi
