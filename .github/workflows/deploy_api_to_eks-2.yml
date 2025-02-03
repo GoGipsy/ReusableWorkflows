@@ -91,7 +91,7 @@ jobs:
         RELEASE_IMAGE: ${{ steps.build-image.outputs.image }}
         KUBE_CONFIG_DATA: ${{ secrets.kube-config-data }} 
       with:                                                                                                         
-        args: -n ${{ inputs.kube-namespace }} apply -f configmap.yaml
+        args: -n ${{ inputs.kube-namespace }} apply -f configmap.yaml --validate=false
     - name: Configure Deployment Template
       run: |
         sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' deployment-template.yaml
