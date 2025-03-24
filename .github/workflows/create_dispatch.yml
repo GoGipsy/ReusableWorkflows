@@ -96,7 +96,7 @@ jobs:
               repository: "${{ inputs.repository }}", 
               registry: "${{ steps.login-ecr.outputs.registry }}", 
               auto-merge: "${{ inputs.auto-merge }}",
-              project: "${{ inputs.project }}"
+              project: "${{ inputs.project }}", 
               projects: "${{ inputs.projects }}"
             }
           }'
