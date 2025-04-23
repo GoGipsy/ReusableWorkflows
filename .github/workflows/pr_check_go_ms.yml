@@ -108,6 +108,7 @@ jobs:
         uses: golangci/golangci-lint-action@v4
         with:
           version: '${{ inputs.go-lint-version }}'
+          args: '--timeout=10m --out-format=colored-line-number'
 
   test:
     runs-on: ${{ inputs.runs-on }}
