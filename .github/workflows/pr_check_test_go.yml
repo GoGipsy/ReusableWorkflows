@@ -52,7 +52,7 @@ jobs:
         run: |
           gh api octocat 
       - name: Install mockery
-        run: go install github.com/vektra/mockery/v2@v2.44.2
+        run: go install github.com/vektra/mockery/v2@v2.53.2
       - name: Run tests
         env:
           GOPRIVATE: github.com/GoGipsy
