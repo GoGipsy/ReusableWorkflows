@@ -167,6 +167,9 @@ jobs:
 
 
   build-and-publish-artifact:
+    needs: 
+      - build-and-publish-amd64
+      - build-and-publish-arm64
     runs-on: ubuntu-24.04
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
