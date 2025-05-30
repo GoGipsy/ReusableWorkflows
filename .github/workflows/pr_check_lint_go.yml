@@ -54,11 +54,11 @@ jobs:
           git config --global url.https://github:$GITHUB_TOKEN@github.com/.insteadOf https://github.com/
           make download
       - name: Install mockery
-        run: go install github.com/vektra/mockery/v2@v2.44.2
+        run: go install github.com/vektra/mockery/v2@v2.53.2
       - name: Generate Mocks
         run: make mocks
       - name: Lint
         uses: golangci/golangci-lint-action@v4
         with:
           version: '${{ inputs.go-lint-version }}'
-          args: '--timeout=10m --out-format=colored-line-number'
+          args: '--timeout=10m'
