@@ -44,7 +44,7 @@ on:
 
 jobs:
   build-and-publish:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     outputs:
       image: ${{ steps.build-image.outputs.image }}
       regitry: ${{ steps.build-image.outputs.registry }}
