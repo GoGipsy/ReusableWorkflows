@@ -1,0 +1,53 @@
+name: Dispatch to IaC QA
+on: 
+
+  workflow_call:
+    inputs:
+      destination: 
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+    secrets:
+      app-id:
+        required: true
+      private-key: 
+        required: true  
+  
+jobs:
+
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate a token
+        uses: actions/create-github-app-token@v1
+        id: generate_token
+        with:
+          app-id: ${{ secrets.app-id }}
+          private-key: ${{ secrets.private-key }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Use the token
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          gh api octocat  
+
+      - name: create a repository_dispatch event
+        id: post_dispatches
+        uses: octokit/request-action@v2.x
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}   
+        with:
+          route: POST /repos/${{ github.repository_owner }}/${{ inputs.destination }}/dispatches
+          data: '{
+            event_type: ${{ inputs.environment }}, 
+            client_payload: {
+
+            }
+          }'
+            
+    
