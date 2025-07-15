@@ -29,9 +29,9 @@ on:
         required: true
 jobs:
   deploy:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         repository: 'GoGipsy/ReusableWorkflows'
     - uses: actions/download-artifact@v4
@@ -82,7 +82,7 @@ jobs:
         cat appsettings.json | sed -e 's/^/        /g' >> configmap.yaml
         
     - name: Archive configmap
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: configmap
         path: configmap.yaml
@@ -103,7 +103,7 @@ jobs:
         sed -i 's/{{aws-region}}/${{ inputs.aws-region }}/' deployment-template-with-promtail-with-resources.yaml
         sed -i 's/{{repository-sufix}}/${{ inputs.repository-sufix }}/' deployment-template-with-promtail-with-resources.yaml
     - name: Archive deployment
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: deployment
         path: deployment-template-with-promtail-with-resources.yaml
@@ -112,7 +112,7 @@ jobs:
         sed -i 's/{{environment}}/${{ inputs.kube-namespace }}/' service-template.yaml
         sed -i 's/{{baseName}}/${{ inputs.base-name }}/' service-template.yaml
     - name: Archive service
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: service
         path: service-template.yaml
