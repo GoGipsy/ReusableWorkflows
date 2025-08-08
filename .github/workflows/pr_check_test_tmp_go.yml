@@ -1,0 +1,84 @@
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        type: string
+        description: "Go version. Default is 1.21."
+        required: false
+        default: "1.21"
+      runs-on:
+        type: string
+        description: "Runner to use. Always try to use self-hosted runners."
+        required: false
+        default: ubuntu-latest
+      coverage-threshold:
+        type: number
+        description: "The minimum coverage threshold. Below this, the workflow will fail."
+        required: false
+        default: 90
+    secrets:
+      app-id:
+        required: true
+      private-key: 
+        required: true
+      deepsource-dns:
+        description: "DeepSource DSN of this repository"
+        required: true
+
+jobs:
+  test:
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '${{ inputs.go-version }}'
+          cache: false
+      - name: Load .env file
+        uses: xom9ikk/dotenv@v2
+        with:
+          mode: testing
+          load-mode: strict
+      - name: Generate a token
+        uses: actions/create-github-app-token@v1
+        id: generate_token
+        with:
+          app-id: ${{ secrets.app-id }}
+          private-key: ${{ secrets.private-key }}
+          owner: ${{ github.repository_owner }}
+      - name: Use the token
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          gh api octocat 
+      - name: Install mockery
+        run: go install github.com/vektra/mockery/v2@v2.53.2
+      - name: Download docs artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-files
+          path: docs/
+      - name: Run tests
+        env:
+          GOPRIVATE: github.com/GoGipsy
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GIT_TERMINAL_PROMPT: 1
+        run: |
+          git config --global url.https://github:$GITHUB_TOKEN@github.com/.insteadOf https://github.com/
+          make mocks
+          go test -v ./...
+          go test -coverprofile=coverage.out ./... -coverpkg=./internal/...,./config,./pkg/...
+      - name: Report test coverage to DeepSource
+        uses: deepsourcelabs/test-coverage-action@master
+        with:
+          key: go
+          coverage-file: coverage.out
+          dsn: ${{ secrets.deepsource-dns }}
+      - name: Analyze Coverage
+        run: |
+          threshold=${{ inputs.coverage-threshold }}
+          coverage=$(go tool cover -func=coverage.out | grep total | awk '{print int($3)}')
+          if [ "$coverage" -lt "$threshold" ]; then
+            echo "Coverage is below threshold ($coverage < $threshold)"
+            exit 1
+          fi
