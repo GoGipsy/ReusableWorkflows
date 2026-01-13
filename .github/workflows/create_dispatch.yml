@@ -97,8 +97,7 @@ jobs:
               registry: "${{ steps.login-ecr.outputs.registry }}", 
               auto-merge: "${{ inputs.auto-merge }}",
               project: "${{ inputs.project }}", 
-              projects: "${{ inputs.projects }}",
-              aws_region: "${{ inputs.aws-region }}"
+              projects: "${{ inputs.projects }}"
             }
           }'
             
