@@ -59,7 +59,6 @@ jobs:
         run: make mocks
       - name: Set golangci-lint-action version
         id: set_lint_version
-        shell: bash
         run: |
           GO_VERSION="${{ inputs.go-version }}"
           MINOR=$(echo "$GO_VERSION" | cut -d. -f2)
