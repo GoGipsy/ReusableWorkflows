@@ -58,7 +58,7 @@ jobs:
       - name: Generate Mocks
         run: make mocks
       - name: Lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v8
         with:
           version: '${{ inputs.go-lint-version }}'
           args: '--timeout=10m'
