@@ -68,7 +68,14 @@ jobs:
             echo "version=v4" >> "$GITHUB_OUTPUT"
           fi
       - name: Lint
-        uses: golangci/golangci-lint-action@${{ steps.set_lint_version.outputs.version }}
+        if: steps.set_lint_version.outputs.version == 'v4'
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: '${{ inputs.go-lint-version }}'
+          args: '--timeout=10m'
+      - name: Lint
+        if: steps.set_lint_version.outputs.version == 'v8'
+        uses: golangci/golangci-lint-action@v8
         with:
           version: '${{ inputs.go-lint-version }}'
           args: '--timeout=10m'
