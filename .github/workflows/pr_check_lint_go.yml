@@ -11,6 +11,11 @@ on:
         description: "Go lint version. Default is v1.55.2"
         required: false
         default: "v1.55.2"
+      golangci-lint-action-version:
+        type: string
+        description: "golangci-lint-action version. Default is v4. Use v8 for Go >= 1.25"
+        required: false
+        default: "v4"
       runs-on:
         type: string
         description: "Runner to use. Always try to use self-hosted runners."
@@ -57,19 +62,8 @@ jobs:
         run: go install github.com/vektra/mockery/v2@v2.53.2
       - name: Generate Mocks
         run: make mocks
-      - name: Set golangci-lint-action version
-        id: set_lint_version
-        run: |
-          GO_VERSION="${{ inputs.go-version }}"
-          MINOR=$(echo "$GO_VERSION" | cut -d. -f2)
-
-          if [[ "$MINOR" -ge 25 ]]; then
-            echo "version=v8" >> "$GITHUB_OUTPUT"
-          else
-            echo "version=v4" >> "$GITHUB_OUTPUT"
-          fi
       - name: Lint
-        uses: golangci/golangci-lint-action@${{ steps.set_lint_version.outputs.version }}
+        uses: golangci/golangci-lint-action@${{ inputs.golangci-lint-action-version }}
         with:
           version: '${{ inputs.go-lint-version }}'
           args: '--timeout=10m'
