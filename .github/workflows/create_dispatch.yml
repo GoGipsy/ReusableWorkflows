@@ -12,13 +12,16 @@ on:
       aws-region:
         required: true
         type: string
-      image: 
+      image:
         required: true
         type: string
       tag:
         required: false
         type: string
-      repository: 
+      namespace:
+        required: false
+        type: string
+      repository:
         required: true
         type: string
       registry: 
@@ -91,10 +94,11 @@ jobs:
               sha: "${{ github.sha }}", 
               from: "${{ github.repository }}", 
               branch: "${{ github.ref_name }}", 
-              image: "${{ inputs.image }}", 
+              image: "${{ inputs.image }}",
               tag: "${{ inputs.tag }}",
-              repository: "${{ inputs.repository }}", 
-              registry: "${{ steps.login-ecr.outputs.registry }}", 
+              repository: "${{ inputs.repository }}",
+              registry: "${{ steps.login-ecr.outputs.registry }}",
+              namespace: "${{ inputs.namespace }}",
               auto-merge: "${{ inputs.auto-merge }}",
               project: "${{ inputs.project }}", 
               projects: "${{ inputs.projects }}"
