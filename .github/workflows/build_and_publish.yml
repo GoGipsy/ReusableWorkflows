@@ -21,7 +21,7 @@ on:
         required: false
         default: ""
         type: string
-      platform: 
+      platform:
         required: false
         default: "linux/arm64,linux/amd64"
         type: string
@@ -37,17 +37,17 @@ on:
       repository:
         description: "Container Repository"
         value: ${{ jobs.build-and-publish.outputs.repository }}
-      registry: 
+      registry:
         description: "Container Registry"
         value: ${{ jobs.build-and-publish.outputs.registry }}
-      
+
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     outputs:
       image: ${{ steps.build-image.outputs.image }}
-      regitry: ${{ steps.build-image.outputs.registry }}
+      registry: ${{ steps.build-image.outputs.registry }}
       repository: ${{ steps.build-image.outputs.repository }}
     steps:
     - uses: actions/checkout@v3
@@ -66,15 +66,15 @@ jobs:
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
-      with: 
+      with:
         mask-password: true
-      
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
-      
+
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
       env:
@@ -92,5 +92,4 @@ jobs:
         --push
         echo "image=$IMAGE_TAG" >> $GITHUB_OUTPUT
         echo "repository=$ECR_REPOSITORY" >> $GITHUB_OUTPUT
-        echo "registry=${{ vars.GIPSYY_AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.aws-region }}.amazonaws.com" >> $GITHUB_OUTPUT
-        
+        echo "registry=$ECR_REGISTRY" >> $GITHUB_OUTPUT
